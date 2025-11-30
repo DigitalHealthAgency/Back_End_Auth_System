@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Quotation - {{client.name}}</title>
+  <style>
+    :root {
+      --primary-color: #3a86ff;
+      --secondary-color: #8338ec;
+      --accent-color: #ff006e;
+      --text-color: #2b2d42;
+      --light-text: #8d99ae;
+      --background: #ffffff;
+      --light-bg: #f8f9fa;
+      --border-radius: 12px;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text-color);
+      background-color: var(--background);
+      line-height: 1.6;
+      counter-reset: page;
+    }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      padding: 3rem;
+      page-break-after: always;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    /* Header styles */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4rem;
+      position: relative;
+      page-break-after: avoid;
+    }
+
+    .company-logo {
+      max-width: 180px;
+      max-height: 80px;
+      margin-bottom: 1rem;
+    }
+
+    .company-info {
+      flex: 2;
+    }
+
+    .company-name {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .company-tagline {
+      font-size: 1rem;
+      color: var(--light-text);
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    .company-details {
+      font-size: 0.9rem;
+      color: var(--light-text);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .company-details span {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .company-details i {
+      color: var(--primary-color);
+    }
+
+    .quote-info {
+      flex: 1;
+      text-align: right;
+    }
+
+    .quote-label {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .quote-details {
+      background-color: var(--light-bg);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .quote-number, .quote-date, .quote-valid {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+
+    .quote-number strong, .quote-date strong, .quote-valid strong {
+      color: var(--primary-color);
+    }
+
+    .client-section {
+      display: flex;
+      margin-bottom: 3rem;
+      gap: 2rem;
+    }
+
+    .client-info, .project-info {
+      flex: 1;
+      background-color: var(--light-bg);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-title i {
+      color: var(--accent-color);
+    }
+
+    /* Table styles */
+    .items-section {
+      margin-bottom: 3rem;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .items-table th {
+      background-image: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      text-align: left;
+      padding: 1rem;
+      font-weight: 600;
+    }
+
+    .items-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #eaeaea;
+    }
+
+    .items-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .items-table tr:nth-child(even) {
+      background-color: var(--light-bg);
+    }
+
+    .item-description {
+      font-weight: 500;
+    }
+
+    .item-notes {
+      font-size: 0.85rem;
+      color: var(--light-text);
+      margin-top: 0.3rem;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* Totals section */
+    .totals-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3rem;
+    }
+
+    .quotation-notes {
+      flex: 3;
+      padding: 1.5rem;
+      background-color: var(--light-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+    }
+
+    .totals-table {
+      flex: 2;
+      margin-left: 2rem;
+    }
+
+    .totals-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .totals-table td {
+      padding: 0.7rem 1rem;
+    }
+
+    .totals-table .total-row {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      border-top: 2px solid var(--primary-color);
+      margin-top: 1rem;
+    }
+
+    /* Footer styles */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 2rem;
+      border-top: 1px solid #eaeaea;
+      font-size: 0.9rem;
+      color: var(--light-text);
+    }
+
+    .terms {
+      flex: 3;
+    }
+
+    .signature {
+      flex: 2;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .signature-line {
+      margin-top: 4rem;
+      border-top: 1px solid var(--light-text);
+      width: 200px;
+      padding-top: 0.5rem;
+      text-align: center;
+    }
+
+    .call-to-action {
+      margin-top: 2rem;
+      background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .cta-headline {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+    }
+
+    .qr-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .qr-code {
+      width: 100px;
+      height: 100px;
+    }
+
+    .qr-text {
+      font-size: 0.85rem;
+      flex: 1;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      background-color: var(--accent-color);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .ribbon {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background-image: linear-gradient(135deg, var(--accent-color), #ff5e78);
+      color: white;
+      padding: 0.5rem 1.5rem;
+      transform: rotate(45deg);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      font-weight: 700;
+      z-index: 1;
+    }
+
+    .page-number {
+      position: absolute;
+      bottom: 2rem;
+      right: 3rem;
+      font-size: 0.8rem;
+      color: var(--light-text);
+    }
+
+    .page-number:after {
+      counter-increment: page;
+      content: "Page " counter(page) " of " attr(data-total-pages);
+    }
+
+    /* Animation for online viewing */
+    @media screen {
+      .items-table tr:hover {
+        background-color: rgba(58, 134, 255, 0.05);
+        transition: background-color 0.3s;
+      }
+      
+      .call-to-action:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+      }
+    }
+    
+    /* Icon placeholders - replace with actual icons in production */
+    i.icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background-color: currentColor;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  {{#each pages}}
+  <div class="page">
+    {{#if @first}}
+    <div class="header">
+      <div class="company-info">
+        {{#if ../user.logo.url}}
+        <img src="{{../user.logo.url}}" alt="{{../user.companyName}} Logo" class="company-logo">
+        {{/if}}
+        <div class="company-name">{{../user.companyName}}</div>
+        <div class="company-tagline">Professional Solutions for Business Growth</div>
+        <div class="company-details">
+          <span><i class="icon"></i> {{../user.email}}</span>
+          {{#if ../user.phone}}<span><i class="icon"></i> {{../user.phone}}</span>{{/if}}
+          {{#if ../user.address}}<span><i class="icon"></i> {{../user.address}}</span>{{/if}}
+        </div>
+      </div>
+      <div class="quote-info">
+        <div class="quote-label">Quotation</div>
+        <div class="quote-details">
+          <div class="quote-number">
+            <strong>Quote #:</strong>
+            <span>{{../quotation.quoteNumber}}</span>
+          </div>
+          <div class="quote-date">
+            <strong>Issued:</strong>
+            <span>{{formatDate ../quotation.dateIssued}}</span>
+          </div>
+          <div class="quote-valid">
+            <strong>Valid Until:</strong>
+            <span>{{formatDate ../quotation.validUntil}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="ribbon">PREMIUM</div>
+    </div>
+
+    <div class="client-section">
+      <div class="client-info">
+        <div class="section-title"><i class="icon"></i> Client Information</div>
+        <p><strong>{{../client.name}}</strong></p>
+        {{#if ../client.company}}<p>{{../client.company}}</p>{{/if}}
+        {{#if ../client.address}}<p>{{../client.address}}</p>{{/if}}
+        {{#if ../client.email}}<p>{{../client.email}}</p>{{/if}}
+        {{#if ../client.phone}}<p>{{../client.phone}}</p>{{/if}}
+      </div>
+      <div class="project-info">
+        <div class="section-title"><i class="icon"></i> Project Details</div>
+        <div class="badge">{{../quotation.projectType}}</div>
+        <p><strong>{{../quotation.quoteName}}</strong></p>
+        <p>{{../quotation.projectDescription}}</p>
+      </div>
+    </div>
+    {{/if}}
+
+    <div class="items-section">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th width="50%">Description</th>
+            <th class="text-center">Quantity</th>
+            <th class="text-right">Unit Price</th>
+            <th class="text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each this.items}}
+          <tr>
+            <td>
+              <div class="item-description">{{this.description}}</div>
+              {{#if this.notes}}
+              <div class="item-notes">{{this.notes}}</div>
+              {{/if}}
+            </td>
+            <td class="text-center">{{this.quantity}}</td>
+            <td class="text-right">{{formatCurrency this.unitPrice ../../quotation.currency}}</td>
+            <td class="text-right">{{formatCurrency (multiply this.quantity this.unitPrice) ../../quotation.currency}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    {{#if this.isLastPage}}
+    <div class="totals-section">
+      <div class="quotation-notes">
+        <div class="section-title"><i class="icon"></i> Notes</div>
+        <p>{{../quotation.notes}}</p>
+      </div>
+      <div class="totals-table">
+        <table>
+          <tr>
+            <td>Subtotal:</td>
+            <td class="text-right">{{formatCurrency ../quotation.subtotal ../quotation.currency}}</td>
+          </tr>
+          {{#if ../quotation.discount}}
+          <tr>
+            <td>Discount:</td>
+            <td class="text-right">-{{formatCurrency ../quotation.discount ../quotation.currency}}</td>
+          </tr>
+          {{/if}}
+          <tr>
+            <td>Tax ({{../quotation.taxRate}}%):</td>
+            <td class="text-right">{{formatCurrency ../quotation.tax ../quotation.currency}}</td>
+          </tr>
+          <tr class="total-row">
+            <td>TOTAL:</td>
+            <td class="text-right">{{formatCurrency ../quotation.total ../quotation.currency}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="call-to-action">
+      <div class="cta-headline">Ready to Get Started?</div>
+      <p>Approve this quote online or contact us directly to discuss any customizations.</p>
+      
+      <div class="qr-section">
+        <img src="{{../quotationQrCode}}" alt="QR Code" class="qr-code">
+        <div class="qr-text">
+          <p><strong>Scan the QR code</strong> to view and approve this quotation online.</p>
+          <p>Or visit: <strong>{{../user.companyDomain}}/quote/{{../quotation.quoteNumber}}</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="terms">
+        <strong>Terms & Conditions</strong>
+        <p>{{../user.quoteTerms}}</p>
+        <p>Thank you for your business!</p>
+      </div>
+      <div class="signature">
+        <div class="signature-line">
+          {{../user.firstName}} {{../user.middleName}} {{../user.surname}}
+          <br>
+          <small>{{../user.position}}</small>
+        </div>
+      </div>
+    </div>
+    {{/if}}
+    
+    <div class="page-number" data-total-pages="{{../totalPages}}"></div>
+  </div>
+  {{/each}}
+</body>
+</html>

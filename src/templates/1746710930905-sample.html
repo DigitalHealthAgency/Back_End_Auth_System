@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{invoiceName}}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    header { text-align: center; margin-bottom: 30px; }
+    .invoice-details, .client-details, .line-items, .totals, .notes, .payment-details {
+      margin-bottom: 20px;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    table, th, td { border: 1px solid #ddd; }
+    th, td { padding: 8px; text-align: left; }
+    .right { text-align: right; }
+    .page-break { page-break-after: always; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{user.companyName}}</h1>
+    <p>{{user.address}}</p>
+    <p>Email: {{user.email}} | Phone: {{user.phone}}</p>
+  </header>
+
+  <div class="invoice-details">
+    <h2>Invoice: {{invoice.invoiceNumber}}</h2>
+    <p><strong>Due Date:</strong> {{formatDate dueDate}}</p>
+  </div>
+
+  <div class="client-details">
+    <h3>Bill To:</h3>
+    <p>{{client.name}}</p>
+    <p>{{client.address}}</p>
+    <p>Email: {{client.contactEmail}}</p>
+    <p>Phone: {{client.contactPhone}}</p>
+  </div>
+
+  <div class="line-items">
+    <h3>Items</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each pages.[0].items}}
+          <tr>
+            <td>{{description}}</td>
+            <td>{{quantity}}</td>
+            <td>{{formatCurrency unitPrice ../currency}}</td>
+            <td>{{formatCurrency (multiply quantity unitPrice) ../currency}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="totals right">
+    <p>Subtotal: {{formatCurrency subtotal currency}}</p>
+    <p>Tax (16%): {{formatCurrency tax currency}}</p>
+    <p>Discount: {{formatCurrency discount currency}}</p>
+    <h2>Total: {{formatCurrency total currency}}</h2>
+  </div>
+
+  <div class="notes">
+    <h3>Project Description</h3>
+    <p>{{projectDescription}}</p>
+
+    <h3>Notes</h3>
+    <p>{{notes}}</p>
+  </div>
+
+  <div class="payment-details">
+    <h3>Payment Details</h3>
+    <p>Method: {{payment.method}}</p>
+    <p>Status: {{payment.status}}</p>
+    {{#if payment.details}}
+      <p>Details: {{payment.details}}</p>
+    {{/if}}
+  </div>
+
+  {{#if invoiceQrCode}}
+    <div class="qr-code">
+      <img src="{{invoiceQrCode}}" alt="Invoice QR Code" width="150" />
+    </div>
+  {{/if}}
+</body>
+</html>

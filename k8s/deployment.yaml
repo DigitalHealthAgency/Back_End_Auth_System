@@ -1,0 +1,301 @@
+# =============================================================================
+# Kubernetes Deployment
+# Manages Auth System service pods and rolling updates
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elano-auth-deployment
+  namespace: elano
+  labels:
+    app: elano-auth-service
+    component: backend
+    version: v1
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: elano-auth-service
+  template:
+    metadata:
+      labels:
+        app: elano-auth-service
+        component: backend
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Security Context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      
+      # Service Account (create separately if needed)
+      serviceAccountName: elano-auth-sa
+      
+      # Init Containers (optional - for setup tasks)
+      initContainers:
+        - name: wait-for-mongodb
+          image: busybox:1.36
+          command: ['sh', '-c', 'echo "Waiting for MongoDB to be ready..."; sleep 10']
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+      
+      containers:
+        - name: auth-service
+          image: elano/auth-system-service:latest
+          imagePullPolicy: Always
+          
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          
+          # Environment Variables from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: elano-auth-config
+          
+          # Environment Variables from Secrets
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: mongo-uri
+            
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: jwt-secret
+            
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: google-client-id
+            
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: google-client-secret
+            
+            - name: CLOUDINARY_CLOUD_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: cloudinary-cloud-name
+            
+            - name: CLOUDINARY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: cloudinary-api-key
+            
+            - name: CLOUDINARY_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: cloudinary-api-secret
+            
+            - name: MAILGUN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: mailgun-api-key
+            
+            - name: MAILGUN_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: mailgun-domain
+            
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: resend-api-key
+            
+            - name: FROM_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: from-email
+            
+            - name: QUOUTE_FROM_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: quoute-from-email
+            
+            - name: PAYSTACK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: paystack-secret-key
+            
+            - name: PAYSTACK_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: paystack-public-key
+            
+            - name: WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: webhook-url
+            
+            - name: OPENWEATHER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: openweather-api-key
+            
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elano-auth-secrets
+                  key: gemini-api-key
+          
+          # Volume Mounts
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: uploads
+              mountPath: /app/uploads
+            - name: temp
+              mountPath: /app/temp
+          
+          # Resource Limits and Requests
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+          
+          # Liveness Probe (restart if unhealthy)
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          
+          # Readiness Probe (traffic only when ready)
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          
+          # Startup Probe (for slow-starting containers)
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 5000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 10
+          
+          # Security Context
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      
+      # Volumes
+      volumes:
+        - name: logs
+          persistentVolumeClaim:
+            claimName: elano-auth-logs-pvc
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: elano-auth-uploads-pvc
+        - name: temp
+          emptyDir:
+            sizeLimit: 1Gi
+      
+      # DNS Configuration
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      
+      # Termination Grace Period
+      terminationGracePeriodSeconds: 30
+      
+      # Node Selector (optional - for specific node targeting)
+      # nodeSelector:
+      #   workload-type: backend
+      
+      # Affinity Rules (optional - for pod distribution)
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - elano-auth-service
+                topologyKey: kubernetes.io/hostname
+      
+      # Tolerations (optional - for tainted nodes)
+      # tolerations:
+      #   - key: "workload-type"
+      #     operator: "Equal"
+      #     value: "backend"
+      #     effect: "NoSchedule"
+
+---
+# =============================================================================
+# Service Account for Auth Service
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: elano-auth-sa
+  namespace: elano
+  labels:
+    app: elano-auth-service

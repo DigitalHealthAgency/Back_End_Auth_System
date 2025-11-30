@@ -1,0 +1,156 @@
+const mongoose = require('mongoose');
+
+const activityLogSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false // Allow system-generated activities
+    },
+    action: {
+        type: String,
+        required: true,
+        enum: [
+            'LOGIN',
+            'Account Registered',
+            'PASSWORD_CHANGE',
+            '`Invalid Session',
+            'PASSWORD_RESET_REQUEST',
+            'RECOVERY_LOGIN',
+            'LOGOUT',
+            'UPDATE_PROFILE',
+            'ACCOUNT_TERMINATION_REQUEST',
+            'Account Termination Aborted',
+            'Authentication Failed',
+            'CREATE_INVOICE',
+            'SEND_INVOICE',
+            'PROFILE_UPDATE',
+            'UPDATE_INVOICE',
+            'DELETE_INVOICE',
+            'RESTORE_INVOICE',
+            'CREATE_INVOICE_FROM_QUOTATION',
+            'CREATE_QUOTATION',
+            'SEND_QUOTATION',
+            'UPDATE_QUOTATION',
+            'DELETE_QUOTATION',
+            'RESTORE_QUOTATION',
+            'CREATE_RECEIPT',
+            'AUTO_GENERATE_RECEIPT',
+            'RESTORE_RECEIPT',
+            'SEND_RECEIPT',
+            'DELETE_RECEIPT',
+            'CREATE_CLIENT',
+            'UPDATE_CLIENT',
+            'DELETE_CLIENT',
+            'RESTORE_CLIENT',
+            'TERMINATE_SESSION',
+            'ENABLE_2FA',
+            'DISABLE_2FA',
+            // Admin actions
+            'ADMIN_VIEW_USERS',
+            'ADMIN_VIEW_USER_DETAILS',
+            'ADMIN_SUSPEND_USER',
+            'ADMIN_REACTIVATE_USER',
+            'ADMIN_DELETE_USER',
+            'ADMIN_UPDATE_USER_ROLE',
+            'ADMIN_IMPERSONATE_USER',
+            'ADMIN_END_IMPERSONATION',
+            'ADMIN_VIEW_LOGIN_HISTORY',
+            'ADMIN_TERMINATE_SESSIONS',
+            'ADMIN_VIEW_USER_ACTIVITY',
+            'ADMIN_SEND_NOTIFICATION',
+            'SUBSCRIPTION_CANCELLED_BY_ADMIN',
+            'SUBSCRIPTION_REACTIVATION_ATTEMPT',
+            'SUBSCRIPTION_RESUMED',
+            // System actions
+            'UPDATE_SYSTEM_SETTINGS',
+            'Unauthorized Admin Access',
+            'ENABLE_MAINTENANCE_MODE',
+            'DISABLE_MAINTENANCE_MODE',
+            'UPDATE_SYSTEM_ANNOUNCEMENT',
+            'SUBSCRIPTION_GRACE_PERIOD_EXPIRED',
+            'SUBSCRIPTION_PAST_DUE',
+            'SUBSCRIPTION_RENEWAL_INITIATED',
+            'SUBSCRIPTION_RENEWAL_FAILED',
+            'SUBSCRIPTION_CRON_JOB_SUMMARY',
+            'RESET_SYSTEM_SETTINGS',
+            'UPLOAD_SYSTEM_LOGO',
+            'UPLOAD_SYSTEM_FAVICON',
+            // Module-specific actions
+            'CREATE_FEATURE_TOGGLE',
+            'FEATURE_USAGE',
+            'UPDATE_FEATURE_TOGGLE',
+            'FEATURE_ENABLED',
+            'FEATURE_DISABLED',
+            'DELETE_FEATURE_TOGGLE',
+            'ADD_USERS_TO_FEATURE',
+            // Security actions
+            'ADMIN_FORCE_LOGOUT',
+            'IP_LIST_ADD',
+            'IP_LIST_UPDATE',
+            'IP_LIST_REMOVE',
+            'BULK_SECURITY_ACTION',
+            'Login Attempt on Suspended Account',
+            'Suspended User Access Attempt',
+            // Payment actions
+            'PAYMENT_SUCCESS',
+            'PAYMENT_FAILED',
+            'PAYMENT_VERIFIED',
+            'SUBSCRIPTION_CANCELLED',
+            'PAYMENT_INITIATED',
+            'PAYMENT_DISPUTE_CREATED',
+            'PLAN_UPGRADE_INITIATED',
+            'PLAN_DOWNGRADE_INITIATED',
+            'FREE_PLAN_UPGRADE_INITIATED',
+            'BILLING_TYPE_CHANGE_SCHEDULED',
+            'BILLING_TYPE_CHANGE_INITIATED', 
+            'PLAN_DOWNGRADED',
+            // Voucher actions
+            'VOUCHER_GENERATED_MANUALLY',
+            'AUTO_VOUCHERS_GENERATED',
+            'VOUCHER_UPDATED',
+            'VOUCHER_DELETED',
+            'VOUCHER_APPLIED_CHECK',
+            'VOUCHER_USED',
+            'SUBSCRIPTION_STATUS_CLEANUP',
+            'SUBSCRIPTION_STATUS_CLEANUP_ERROR',
+            'FEATURE_USAGE_RESET',
+            'FEATURE_USAGE_RESET_SUMMARY',
+            'ACCOUNT_CLEANUP',
+            'CLIENT_CLEANUP',
+            'INVOICE_CLEANUP',
+            'LARGE_INVOICE_CLEANUP',
+            'RECEIPT_CLEANUP',
+            'QUOTATION_CLEANUP',
+            'NOTIFICATION_CLEANUP',
+            'SYSTEM_MAINTENANCE',
+            'UPLOAD_TEMPLATE',
+            'DELETE_TEMPLATE',
+            'UPLOAD_INVOICE_TEMPLATE',
+            'EMAIL_SENT',
+            'USER_STATUS_SYNC',
+            'CRON_JOB_EXECUTED'
+        ]
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    details: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
+    ip: String,
+    userAgent: String,
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        expires: 30 * 24 * 60 * 60 // Auto-delete after 30 days
+    }
+});
+
+// Indexes for better query performance
+activityLogSchema.index({ createdAt: -1 });
+activityLogSchema.index({ user: 1, createdAt: -1 });
+activityLogSchema.index({ action: 1, createdAt: -1 });
+
+module.exports = mongoose.model('ActivityLog', activityLogSchema);

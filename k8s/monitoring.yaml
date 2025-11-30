@@ -1,0 +1,138 @@
+# =============================================================================
+# Service Monitor (Prometheus Operator)
+# Configures Prometheus to scrape Auth System metrics
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: elano-auth-monitor
+  namespace: elano
+  labels:
+    app: elano-auth-service
+    component: backend
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: elano-auth-service
+  
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      scheme: http
+  
+  namespaceSelector:
+    matchNames:
+      - elano
+
+---
+# =============================================================================
+# Prometheus Rule (Alerts)
+# Defines alerting rules for Auth System
+# =============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: elano-auth-alerts
+  namespace: elano
+  labels:
+    app: elano-auth-service
+    component: backend
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: elano-auth-service
+      interval: 30s
+      rules:
+        # High Error Rate Alert
+        - alert: AuthServiceHighErrorRate
+          expr: |
+            (rate(http_requests_total{job="elano-auth-service",status=~"5.."}[5m])
+            / rate(http_requests_total{job="elano-auth-service"}[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            service: auth-system
+          annotations:
+            summary: "High error rate on Auth Service"
+            description: "Auth Service is experiencing {{ $value | humanizePercentage }} error rate for more than 5 minutes."
+        
+        # Pod Down Alert
+        - alert: AuthServicePodDown
+          expr: |
+            kube_deployment_status_replicas_available{deployment="elano-auth-deployment"} < 2
+          for: 2m
+          labels:
+            severity: critical
+            service: auth-system
+          annotations:
+            summary: "Auth Service has insufficient replicas"
+            description: "Auth Service has {{ $value }} available replicas, minimum required is 2."
+        
+        # High Memory Usage Alert
+        - alert: AuthServiceHighMemoryUsage
+          expr: |
+            (container_memory_usage_bytes{pod=~"elano-auth-deployment-.*"}
+            / container_spec_memory_limit_bytes{pod=~"elano-auth-deployment-.*"}) > 0.9
+          for: 5m
+          labels:
+            severity: warning
+            service: auth-system
+          annotations:
+            summary: "Auth Service high memory usage"
+            description: "Auth Service pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of its memory limit."
+        
+        # High CPU Usage Alert
+        - alert: AuthServiceHighCPUUsage
+          expr: |
+            (rate(container_cpu_usage_seconds_total{pod=~"elano-auth-deployment-.*"}[5m])
+            / container_spec_cpu_quota{pod=~"elano-auth-deployment-.*"}) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            service: auth-system
+          annotations:
+            summary: "Auth Service high CPU usage"
+            description: "Auth Service pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of its CPU limit."
+        
+        # Health Check Failure Alert
+        - alert: AuthServiceHealthCheckFailing
+          expr: |
+            probe_success{job="elano-auth-service"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            service: auth-system
+          annotations:
+            summary: "Auth Service health check failing"
+            description: "Auth Service health check has been failing for more than 2 minutes."
+        
+        # High Response Time Alert
+        - alert: AuthServiceHighResponseTime
+          expr: |
+            histogram_quantile(0.95,
+              rate(http_request_duration_seconds_bucket{job="elano-auth-service"}[5m])
+            ) > 2
+          for: 5m
+          labels:
+            severity: warning
+            service: auth-system
+          annotations:
+            summary: "Auth Service high response time"
+            description: "Auth Service 95th percentile response time is {{ $value }}s, which is above the 2s threshold."
+        
+        # Database Connection Alert
+        - alert: AuthServiceDatabaseConnectionIssue
+          expr: |
+            mongodb_connections{job="elano-auth-service"} < 1
+          for: 2m
+          labels:
+            severity: critical
+            service: auth-system
+          annotations:
+            summary: "Auth Service database connection issue"
+            description: "Auth Service has {{ $value }} active database connections."

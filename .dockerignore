@@ -1,0 +1,84 @@
+# =============================================================================
+# Docker Ignore File
+# Excludes unnecessary files from Docker build context
+# =============================================================================
+
+# Node modules (installed during build)
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Environment files (use secrets management)
+.env
+.env.*
+!.env.example
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Test files
+test
+tests
+*.test.js
+*.spec.js
+coverage
+.nyc_output
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+docs
+
+# CI/CD files
+.github
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+Jenkinsfile
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes files
+k8s
+kubernetes
+*.yaml
+*.yml
+
+# Logs and temp files
+logs
+*.log
+temp
+tmp
+*.tmp
+
+# Build artifacts
+dist
+build
+.next
+out
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+*.old

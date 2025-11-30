@@ -1,0 +1,161 @@
+# =============================================================================
+# Kubernetes Ingress
+# Routes external traffic to Auth System service
+# NOTE: Rate limiting is handled by API Gateway, not at service level
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elano-auth-ingress
+  namespace: elano
+  labels:
+    app: elano-auth-service
+    component: backend
+  annotations:
+    # Ingress Controller
+    kubernetes.io/ingress.class: "nginx"
+    
+    # TLS Configuration
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # CORS Configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://elano.cloud,https://www.elano.cloud"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    
+    # Request Size
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    
+    # WebSocket Support
+    nginx.ingress.kubernetes.io/websocket-services: "elano-auth-service"
+    
+    # Security Headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+    
+    # SSL Configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # NOTE: Rate limiting is NOT configured here
+    # API Gateway handles all rate limiting centrally
+spec:
+  tls:
+    - hosts:
+        - api.elano.cloud
+        - auth.elano.cloud
+      secretName: elano-tls-secret
+  
+  rules:
+    # Main API domain (api.elano.cloud)
+    - host: api.elano.cloud
+      http:
+        paths:
+          # Authentication Routes
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+          
+          # Password Management Routes
+          - path: /api/password
+            pathType: Prefix
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+          
+          # User Management Routes
+          - path: /api/users
+            pathType: Prefix
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+          
+          # Account Recovery Routes
+          - path: /recovery
+            pathType: Prefix
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+          
+          # Two-Factor Authentication Routes
+          - path: /api/two-factor
+            pathType: Prefix
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+          
+          # Cron Job Routes (internal)
+          - path: /api/cron
+            pathType: Prefix
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+          
+          # Health Check (for monitoring)
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+    
+    # Dedicated Auth subdomain (auth.elano.cloud)
+    - host: auth.elano.cloud
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: elano-auth-service
+                port:
+                  number: 5000
+
+---
+# =============================================================================
+# Certificate (Let's Encrypt)
+# =============================================================================
+# Automatically provisioned by cert-manager based on the annotation above
+# Manual creation (if needed):
+#
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: elano-tls-cert
+#   namespace: elano
+# spec:
+#   secretName: elano-tls-secret
+#   issuerRef:
+#     name: letsencrypt-prod
+#     kind: ClusterIssuer
+#   dnsNames:
+#     - api.elano.cloud
+#     - auth.elano.cloud
+# =============================================================================

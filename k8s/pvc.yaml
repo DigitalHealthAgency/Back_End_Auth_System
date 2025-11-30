@@ -1,0 +1,58 @@
+# =============================================================================
+# Persistent Volume Claims
+# Storage for logs and uploads
+# =============================================================================
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elano-auth-logs-pvc
+  namespace: elano
+  labels:
+    app: elano-auth-service
+    component: backend
+    storage-type: logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elano-auth-uploads-pvc
+  namespace: elano
+  labels:
+    app: elano-auth-service
+    component: backend
+    storage-type: uploads
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+# =============================================================================
+# Alternative: Using Dynamic Provisioning with specific storage class
+# =============================================================================
+# For cloud providers, you might want to use their specific storage classes:
+#
+# AWS EBS:
+# storageClassName: gp3
+#
+# GCP Persistent Disk:
+# storageClassName: standard-rwo
+#
+# Azure Disk:
+# storageClassName: managed-premium
+#
+# For local development with Minikube/Kind:
+# storageClassName: standard
+# =============================================================================

@@ -1,0 +1,101 @@
+# =============================================================================
+# Network Policy
+# Controls network traffic to/from Auth System pods
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: elano-auth-network-policy
+  namespace: elano
+  labels:
+    app: elano-auth-service
+    component: backend
+spec:
+  podSelector:
+    matchLabels:
+      app: elano-auth-service
+  
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  # Ingress Rules (incoming traffic)
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 5000
+    
+    # Allow traffic from other services in the same namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: elano
+      ports:
+        - protocol: TCP
+          port: 5000
+    
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+  
+  # Egress Rules (outgoing traffic)
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    
+    # Allow HTTPS to external services (MongoDB Atlas, APIs)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+    
+    # Allow HTTP to external services
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+    
+    # Allow MongoDB Atlas connection (27017)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 27017
+    
+    # Allow communication with other services in the namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: elano
+      ports:
+        - protocol: TCP
+          port: 5000
+        - protocol: TCP
+          port: 5003
+        - protocol: TCP
+          port: 5004
