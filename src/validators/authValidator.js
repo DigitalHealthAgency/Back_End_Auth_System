@@ -34,9 +34,14 @@ const organizationSchema = Joi.object({
   type: Joi.string().valid('organization').required(),
   organizationName: Joi.string().max(128).required(),
   organizationType: Joi.string().valid(
+    // Healthcare Facilities
     'HOSPITAL', 'CLINIC', 'HEALTH_CENTER', 'DISPENSARY', 'LABORATORY', 'PHARMACY',
-    'DENTAL', 'IMAGING', 'SPECIALIST', 'REHAB', 'EMR', 'EHR', 'LIS', 'PIS', 'RIS',
-    'HMIS', 'TELEMED', 'HEALTH_APP', 'HIE', 'INSURANCE', 'PUBLIC_HEALTH'
+    'DENTAL_CLINIC', 'IMAGING_CENTER', 'SPECIALIST_CLINIC', 'REHABILITATION_CENTER',
+    // Digital Health Solutions
+    'EMR_PROVIDER', 'EHR_PROVIDER', 'LIS_PROVIDER', 'PACS_PROVIDER', 'RIS_PROVIDER',
+    'HMIS_PROVIDER', 'TELEMEDICINE', 'HEALTH_APP', 'HIE_PLATFORM',
+    // Other Health Organizations
+    'HEALTH_INSURANCE', 'PUBLIC_HEALTH', 'MEDICAL_RESEARCH', 'HEALTH_NGO', 'OTHER'
   ).required(),
   county: Joi.string().max(64).required(),
   subCounty: Joi.string().max(64).required(),
@@ -46,7 +51,9 @@ const organizationSchema = Joi.object({
   }),
   yearOfEstablishment: Joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
   password: passwordComplexity,
-  receiveSystemAlerts: Joi.boolean().optional()
+  receiveSystemAlerts: Joi.boolean().optional(),
+  captchaAnswer: Joi.string().optional(),
+  captchaToken: Joi.string().optional()
 });
 
 const registerSchema = Joi.alternatives().try(individualSchema, organizationSchema);

@@ -126,7 +126,7 @@ router.get('/:id/snapshot', async (req, res) => {
       role: user.role || 'user',
       phone: user.phone || user.organizationPhone,
       organizationName: user.organizationName,
-      legalTrack: user.legalTrack,
+      organizationType: user.organizationType,
       accountType: user.type || 'user',
       accountStatus: user.accountStatus,
       snapshotAt: new Date()

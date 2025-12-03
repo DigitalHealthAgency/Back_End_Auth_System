@@ -120,9 +120,14 @@ const userSchema = new mongoose.Schema({
   organizationType: {
     type: String,
     enum: [
+      // Healthcare Facilities
       'HOSPITAL', 'CLINIC', 'HEALTH_CENTER', 'DISPENSARY', 'LABORATORY', 'PHARMACY',
-      'DENTAL', 'IMAGING', 'SPECIALIST', 'REHAB', 'EMR', 'EHR', 'LIS', 'PIS', 'RIS',
-      'HMIS', 'TELEMED', 'HEALTH_APP', 'HIE', 'INSURANCE', 'PUBLIC_HEALTH'
+      'DENTAL_CLINIC', 'IMAGING_CENTER', 'SPECIALIST_CLINIC', 'REHABILITATION_CENTER',
+      // Digital Health Solutions
+      'EMR_PROVIDER', 'EHR_PROVIDER', 'LIS_PROVIDER', 'PACS_PROVIDER', 'RIS_PROVIDER',
+      'HMIS_PROVIDER', 'TELEMEDICINE', 'HEALTH_APP', 'HIE_PLATFORM',
+      // Other Health Organizations
+      'HEALTH_INSURANCE', 'PUBLIC_HEALTH', 'MEDICAL_RESEARCH', 'HEALTH_NGO', 'OTHER'
     ],
     sparse: true
   },

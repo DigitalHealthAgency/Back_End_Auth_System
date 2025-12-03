@@ -201,7 +201,8 @@ exports.register = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: 'strict'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',  // Allow cross-origin in dev
+      path: '/'
     });
 
     res.status(201).json({
@@ -479,7 +480,8 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: 'strict'
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',  // Allow cross-origin in dev
+      path: '/'
     });
 
     res.status(200).json({
@@ -883,8 +885,8 @@ exports.changePassword = async (req, res) => {
     user.password = hashedNewPassword;
     user.passwordChangedAt = new Date();
 
-    // Increment token version to invalidate existing tokens
-    user.tokenVersion = (user.tokenVersion || 0) + 1;
+    // DON'T increment token version - keep user logged in
+    // user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
 
     await logActivity({
@@ -895,12 +897,36 @@ exports.changePassword = async (req, res) => {
       userAgent: requestInfo.userAgent
     });
 
+    // Send in-app notification
     await sendNotification({
       userId: user._id,
       title: 'Password Changed',
       body: 'You have successfully changed your account password.',
       type: 'success'
     });
+
+    // Send email notification
+    const { sendEmail } = require('../utils/sendEmail');
+    const { createPasswordChangeEmail } = require('../utils/emailTemplates');
+    const userEmail = user.email || user.organizationEmail;
+    const userName = user.firstName || user.organizationName || 'User';
+
+    try {
+      await sendEmail({
+        to: userEmail,
+        subject: 'Password Changed - Kenya DHA',
+        html: createPasswordChangeEmail(
+          userName,
+          userEmail,
+          new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }),
+          requestInfo.ip,
+          requestInfo.deviceString
+        )
+      });
+    } catch (emailError) {
+      console.error('Failed to send password change email:', emailError);
+      // Don't fail the password change if email fails
+    }
 
     await logSecurityEvent({
       user: user._id,
@@ -909,13 +935,13 @@ exports.changePassword = async (req, res) => {
       ip: requestInfo.ip,
       device: requestInfo.deviceString,
       details: {
-        tokenVersionIncremented: true,
+        tokenVersionIncremented: false,  // Keep user logged in
         riskAssessment: requestInfo.riskAssessment
       }
     });
 
     res.status(200).json({
-      message: 'Password updated successfully. Please log in again.',
+      message: 'Password updated successfully. You remain logged in.',
       code: 'PASSWORD_CHANGED'
     });
   } catch (err) {

@@ -25,10 +25,15 @@ const cronManager = new CronManager();
 const app = express();
 
 // CORS and basic middleware
-//app.use(cors({
-  //origin: '*',
-  //credentials: true
-//}));
+// Enable CORS for frontend to send cookies
+const cors = require('cors');
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:8000', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie']
+}));
 
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());

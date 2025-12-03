@@ -591,7 +591,7 @@ const createWelcomeEmail = (user, plainKey) => {
           
           <div class="divider"></div>
           
-          <p>For security reasons, this code can only be used once. If you need assistance, please contact our support team at <a href="mailto:support@Huduma Hubapp.com">support@Huduma Hubapp.com</a>.</p>
+          <p>For security reasons, this code can only be used once. If you need assistance, please contact our support team at <a href="mailto:support@dha.go.ke">support@dha.go.ke</a>.</p>
         </div>
         <div class="footer">
           <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
@@ -1109,7 +1109,7 @@ const createWelcomeEmail = (user, plainKey) => {
                   <a href="${paymentUrl}" class="button">Pay Now</a>
                   <p>If the button above does not work, copy and paste the following link into your browser:</p>
                   <p><a href="${paymentUrl}">${paymentUrl}</a></p>
-                  <p>If you have any questions or need assistance, please contact our support team at <a href="mailto:support@Huduma Hubapp.com">support@Huduma Hubapp.com</a>.</p>
+                  <p>If you have any questions or need assistance, please contact our support team at <a href="mailto:support@dha.go.ke">support@dha.go.ke</a>.</p>
                   <p>Thank you for being a valued member of Kenya Digital Health Agency!</p>
               </div>
               <div class="footer">
@@ -1122,11 +1122,77 @@ const createWelcomeEmail = (user, plainKey) => {
       </html>
     `;
   };
-  
+  // Password Change Notification Email
+  const createPasswordChangeEmail = (name, email, changeTime, ipAddress, device) => {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <meta charset="utf-8">
+          <title>Password Changed - Kenya DHA</title>
+          <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f4f4f4; }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: white; padding: 30px; border-radius: 0 0 10px 10px; }
+              .alert-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+              .info-box { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+              .footer { background: #333; color: white; padding: 20px; text-align: center; margin-top: 20px; border-radius: 5px; }
+              .button { background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h1>🔐 Password Changed</h1>
+                  <p style="margin: 10px 0 0 0; font-size: 14px;">Kenya Digital Health Agency</p>
+              </div>
+              <div class="content">
+                  <h2>Hello ${name},</h2>
+                  <p>Your account password was successfully changed.</p>
+
+                  <div class="info-box">
+                      <h3 style="margin-top: 0;">Change Details:</h3>
+                      <p><strong>Email:</strong> ${email}</p>
+                      <p><strong>Time:</strong> ${changeTime}</p>
+                      <p><strong>IP Address:</strong> ${ipAddress}</p>
+                      <p><strong>Device:</strong> ${device}</p>
+                  </div>
+
+                  <div class="alert-box">
+                      <h3 style="margin-top: 0;">⚠️ Didn't make this change?</h3>
+                      <p>If you did not change your password, your account may have been compromised. Please:</p>
+                      <ul>
+                          <li>Reset your password immediately</li>
+                          <li>Contact Kenya DHA support</li>
+                          <li>Review your recent account activity</li>
+                      </ul>
+                      <a href="${process.env.FRONTEND_URL}/forgot-password" class="button">Reset Password Now</a>
+                  </div>
+
+                  <p style="margin-top: 30px;">If you made this change, you can safely ignore this email.</p>
+
+                  <p style="margin-top: 20px; color: #666; font-size: 12px;">
+                      <strong>Security Tip:</strong> Never share your password with anyone. Kenya DHA will never ask for your password via email.
+                  </p>
+              </div>
+              <div class="footer">
+                  <p><strong>Kenya Digital Health Agency</strong></p>
+                  <p>Advancing Digital Health Excellence in Kenya</p>
+                  <p style="font-size: 12px; margin-top: 10px;">📍 Ministry of Health, Afya House, Cathedral Road, Nairobi</p>
+                  <p style="font-size: 12px;">© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
+              </div>
+          </div>
+      </body>
+      </html>
+    `;
+  };
+
   module.exports = {
     createWelcomeEmail,
     createLoginAlertEmail,
     createPasswordResetEmail,
+    createPasswordChangeEmail,
     createCronErrorEmail,
     createQuotationEmail,
     createInvoiceEmail,
