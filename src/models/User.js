@@ -117,9 +117,13 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true // allow null for individuals
   },
-  legalTrack: {
+  organizationType: {
     type: String,
-    enum: ['PBO', 'CBO', 'CGRA', 'NPO', 'CSO'],
+    enum: [
+      'HOSPITAL', 'CLINIC', 'HEALTH_CENTER', 'DISPENSARY', 'LABORATORY', 'PHARMACY',
+      'DENTAL', 'IMAGING', 'SPECIALIST', 'REHAB', 'EMR', 'EHR', 'LIS', 'PIS', 'RIS',
+      'HMIS', 'TELEMED', 'HEALTH_APP', 'HIE', 'INSURANCE', 'PUBLIC_HEALTH'
+    ],
     sparse: true
   },
   subCounty: { type: String },
@@ -144,13 +148,32 @@ const userSchema = new mongoose.Schema({
   },
 
   // Common fields
-  password: { 
-    type: String, 
+  password: {
+    type: String,
     required: function() {
-      return !this.firstTimeSetup;
-    }, 
-    select: true 
+      return !this.firstTimeSetup && !this.googleId;
+    },
+    select: true
   },
+
+  // Google OAuth ID
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+
+  // ✅ FIXED: Password History (SRS Requirement - Last 5 passwords)
+  passwordHistory: [{
+    hash: { type: String, required: true },
+    changedAt: { type: Date, default: Date.now }
+  }],
+  maxPasswordHistory: { type: Number, default: 5 },
+
+  // ✅ FIXED: Password Expiry (SRS Requirement - 90 days)
+  passwordExpiresAt: { type: Date },
+  passwordLastChanged: { type: Date, default: Date.now },
+  passwordExpiryDays: { type: Number, default: 90 },
   
   // First time password setup
   firstTimeSetup: {
@@ -209,51 +232,29 @@ const userSchema = new mongoose.Schema({
     public_id: String
   },
 
-  // Enhanced Role system for board members and organization roles
+  // ✅ DHA-SPECIFIC RBAC: 9 Roles with Granular Permissions (SRS Requirement)
+  // FR-RBAC-001: Role-Based Access Control for Digital Health Certification
   role: {
     type: String,
     enum: [
-      'admin', 
-      'user', 
-      'organization',
-      'reviewer', // Required for Organization Registration service
-      // Board roles
-      'chairperson',
-      'vice_chairperson',
-      'secretary',
-      'treasurer',
-      'board_member',
-      'patron',
-      'advisor',
-      // New operational roles
-      'project_manager',
-      'field_officer',
-      'm_and_e_officer',
-      'donor',
-      // Department roles
-      'hr',
-      'finance',
-      'operations',
-      'marketing',
-      'it',
-      'legal',
-      'programs',
-      'communications',
-      // Management roles
-      'ceo',
-      'director',
-      'manager',
-      'coordinator',
-      'officer',
-      'assistant'
+      'vendor_developer',                 // Software vendors submitting applications
+      'vendor_technical_lead',            // Vendor technical documentation lead
+      'vendor_compliance_officer',        // Vendor compliance and legal lead
+      'dha_system_administrator',         // DHA IT staff managing platform
+      'dha_certification_officer',        // DHA staff reviewing applications
+      'testing_lab_staff',                // Testing lab personnel
+      'certification_committee_member',   // Committee members voting on certifications
+      'county_health_officer',            // County health officials
+      'public_user'                       // General public (read-only registry access)
     ],
-    default: 'user'
+    default: 'public_user'  // Default role for new registrations
   },
 
-  // Two-Factor Authentication
-  twoFactorEnabled: { type: Boolean, default: false },
+  // Two-Factor Authentication (User must set up after registration)
+  twoFactorEnabled: { type: Boolean, default: false },  // Disabled by default, enabled after setup
   twoFactorSecret: { type: String, select: false },
   twoFactorTempSecret: { type: String },
+  twoFactorSetupRequired: { type: Boolean, default: true }, // Prompt user to set up 2FA
 
   tokenVersion: { type: Number, default: 0 },
 
@@ -262,6 +263,10 @@ const userSchema = new mongoose.Schema({
   suspensionReason: { type: String },
   suspendedAt: { type: Date },
   suspendedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
+  // ✅ FIXED: Account Lockout (SRS Requirement - 30-minute temporary)
+  lockedUntil: { type: Date },
+  failedAttempts: { type: Number, default: 0 },
 
   // Account Termination
   terminationRequested: { type: Boolean, default: false },

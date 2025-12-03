@@ -1,4 +1,4 @@
-# Huduma Hub Auth System - Installation Guide
+# Kenya Digital Health Agency (DHA) - Auth System Installation Guide
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@
 
    ```sh
    git clone <your-repo-url>
-   cd Huduma_Hub/Auth_System
+   cd DHA/Back_End_Auth_System
    ```
 
 2. **Install dependencies**
@@ -30,7 +30,7 @@
 
    Example:
    ```
-   MONGO_URI=mongodb://localhost:27017/huduma_hub_auth
+   MONGO_URI=mongodb://localhost:27017/kenya_dha_auth
    JWT_SECRET=your_jwt_secret
    CLOUDINARY_URL=your_cloudinary_url
    ```

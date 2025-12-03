@@ -65,8 +65,45 @@ exports.verifyCode = async (req, res) => {
     if (record.expiresAt < new Date())
       return res.status(400).json({ message: 'Code expired' });
 
-    // OPTIONAL: Delete record after use
-    await PasswordReset.deleteOne({ email });
+    // Mark the code as verified but don't delete yet - user still needs to reset password
+    record.verified = true;
+    await record.save();
+
+    await logActivity({
+      user: null, // User not logged in yet
+      action: 'PASSWORD_RESET_CODE_VERIFIED',
+      description: `Password reset code verified for email: ${email}`,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+
+    res.status(200).json({
+      message: 'Code verified successfully. Please set your new password.',
+      email: email // Return email so frontend can use it in reset password request
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Verification failed' });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    // Verify that the code was verified (and not expired)
+    const record = await PasswordReset.findOne({
+      email,
+      verified: true
+    });
+
+    if (!record)
+      return res.status(400).json({ message: 'Please verify your reset code first' });
+
+    if (record.expiresAt < new Date()) {
+      await PasswordReset.deleteOne({ email });
+      return res.status(400).json({ message: 'Reset code expired. Please request a new one.' });
+    }
 
     // Find user by either email or organizationEmail
     const user = await User.findOne({
@@ -74,9 +111,71 @@ exports.verifyCode = async (req, res) => {
         { email },
         { organizationEmail: email }
       ]
-    });
+    }).select('+password +passwordHistory');
+
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Check if new password matches any of the last 5 passwords
+    const passwordHistory = user.passwordHistory || [];
+    for (const oldPassword of passwordHistory) {
+      const isOldPassword = await bcrypt.compare(newPassword, oldPassword.hash);
+      if (isOldPassword) {
+        return res.status(400).json({
+          message: 'New password cannot be the same as any of your last 5 passwords'
+        });
+      }
+    }
+
+    // Check current password too
+    if (user.password) {
+      const isSameAsCurrent = await bcrypt.compare(newPassword, user.password);
+      if (isSameAsCurrent) {
+        return res.status(400).json({
+          message: 'New password cannot be the same as your current password'
+        });
+      }
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password history
+    if (user.password) {
+      passwordHistory.unshift({
+        hash: user.password,
+        changedAt: new Date()
+      });
+
+      // Keep only last 5 passwords
+      if (passwordHistory.length > 5) {
+        passwordHistory.splice(5);
+      }
+    }
+
+    // Update user password and related fields
+    user.password = hashedPassword;
+    user.passwordHistory = passwordHistory;
+    user.passwordLastChanged = new Date();
+    user.passwordExpiresAt = new Date(Date.now() + (user.passwordExpiryDays || 90) * 24 * 60 * 60 * 1000);
+    user.failedAttempts = 0; // Reset failed attempts
+    user.lockedUntil = undefined; // Unlock account if locked
+
+    await user.save();
+
+    // Delete the password reset record
+    await PasswordReset.deleteOne({ email });
+
+    // Log the activity
+    await logActivity({
+      user: user._id,
+      action: 'PASSWORD_RESET_COMPLETED',
+      description: 'User successfully reset their password',
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+
+    // Create session and log the user in
     const sessionId = require('crypto').randomUUID();
     user.sessions = user.sessions || [];
     user.sessions.unshift({
@@ -102,11 +201,37 @@ exports.verifyCode = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
     });
-    
-    res.status(200).json({ message: 'Code verified', user, token });
+
+    res.status(200).json({
+      message: 'Password reset successfully. You are now logged in.',
+      user: {
+        _id: user._id,
+        type: user.type,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        organizationName: user.organizationName,
+        organizationType: user.organizationType,
+        county: user.county,
+        subCounty: user.subCounty,
+        organizationEmail: user.organizationEmail,
+        organizationPhone: user.organizationPhone,
+        yearOfEstablishment: user.yearOfEstablishment,
+        role: user.role,
+        logo: user.logo,
+        accountStatus: user.accountStatus,
+        twoFactorEnabled: user.twoFactorEnabled,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      },
+      token
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Verification failed' });
+    res.status(500).json({ message: 'Password reset failed' });
   }
 };
 

@@ -21,12 +21,14 @@ const securityEventSchema = new mongoose.Schema({
     enum: [
       'Login Attempt',
       'Registration Successful',
+      'Account Registered',
       'Registration Failed',
       'Registration Error',
       'High Risk Registration Blocked',
       'High Risk Request Blocked',
       'Suspicious Activity Detected',
       'Failed Login',
+      'Authentication Failed',
       'Login Successful',
       'Suspended Account Login Attempt',
       'New Device Login',
@@ -211,7 +213,8 @@ securityEventSchema.statics.getFailedAttemptsByEmail = async function(email, tim
   
   return this.find({
     targetEmail: email,
-    action: { $in: ['Failed Login', 'Multiple Failed Attempts'] },
+    action: { $in: ['Failed Login',
+      'Authentication Failed', 'Multiple Failed Attempts'] },
     createdAt: { $gte: startDate }
   }).sort({ createdAt: -1 });
 };
@@ -224,7 +227,8 @@ securityEventSchema.statics.getMostTargetedEmails = async function(timeRange = 2
     {
       $match: {
         targetEmail: { $exists: true, $ne: null },
-        action: { $in: ['Failed Login', 'Multiple Failed Attempts'] },
+        action: { $in: ['Failed Login',
+      'Authentication Failed', 'Multiple Failed Attempts'] },
         createdAt: { $gte: startDate }
       }
     },
@@ -259,7 +263,8 @@ securityEventSchema.statics.getAttackPatterns = async function(timeRange = 24) {
   return this.aggregate([
     {
       $match: {
-        action: { $in: ['Failed Login', 'Multiple Failed Attempts'] },
+        action: { $in: ['Failed Login',
+      'Authentication Failed', 'Multiple Failed Attempts'] },
         createdAt: { $gte: startDate }
       }
     },

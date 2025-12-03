@@ -14,12 +14,13 @@ const logActivity = require('../utils/activityLogger');
 const securityEvent = require('../models/securityEvent');
 const crypto = require('crypto');
 const IPList = require('../models/IPList');
-const { 
+const {
   createWelcomeEmail,
   createLoginAlertEmail,
   createPasswordResetEmail
 } = require('../utils/emailTemplates');
 const speakeasy = require('speakeasy');
+const { verifyCaptcha } = require('../utils/captcha');
 
 const accountSecurityState = new Map();
 
@@ -70,12 +71,29 @@ async function logSecurityEvent(eventData) {
 
 // Updated register function with subscription plan selection
 exports.register = async (req, res) => {
-  const { type } = req.body;
+  console.log('[REGISTER] Request received:', { type: req.body.type, email: req.body.email || req.body.organizationEmail });
+  const { type, captchaAnswer, captchaToken } = req.body;
   const requestInfo = getRequestInfo(req);
 
   try {
     if (!type || !['individual', 'organization'].includes(type)) {
       return res.status(400).json({ message: 'Invalid registration type', code: 'INVALID_TYPE' });
+    }
+
+    // Verify CAPTCHA
+    if (!captchaAnswer || !captchaToken) {
+      return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
+    }
+
+    if (!verifyCaptcha(captchaAnswer, captchaToken)) {
+      await logSecurityEvent({
+        action: 'Failed CAPTCHA Verification',
+        severity: 'medium',
+        ip: requestInfo.ip,
+        device: requestInfo.deviceString,
+        details: { attemptedRegistration: true }
+      });
+      return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
     }
 
     // Enhanced security checks (example: suspicious IP, device fingerprint, etc.)
@@ -106,13 +124,13 @@ exports.register = async (req, res) => {
         return res.status(409).json({ message: 'Username or email already exists', code: 'USER_EXISTS' });
       }
       
-      // Set role to admin for specific hardcoded email
-      const role = email === 'ianmathew186@gmail.com' ? 'admin' : 'user';
-      
+      // Set role to system administrator for specific hardcoded email
+      const role = email === 'ianmathew186@gmail.com' ? 'dha_system_administrator' : 'public_user';
+
       userData = { ...userData, username, firstName, lastName, email, phone, password: await bcrypt.hash(password, 12), role };
     } else if (type === 'organization') {
-      const { organizationName, legalTrack, county, subCounty, organizationEmail, organizationPhone, yearOfEstablishment, password } = req.body;
-      if (!organizationName || !legalTrack || !county || !subCounty || !organizationEmail || !organizationPhone || !yearOfEstablishment || !password) {
+      const { organizationName, organizationType, county, subCounty, organizationEmail, organizationPhone, yearOfEstablishment, password } = req.body;
+      if (!organizationName || !organizationType || !county || !subCounty || !organizationEmail || !organizationPhone || !yearOfEstablishment || !password) {
         return res.status(400).json({ message: 'Missing required fields for organization registration', code: 'MISSING_FIELDS' });
       }
       if (await User.findOne({ $or: [{ organizationName }, { organizationEmail }] })) {
@@ -121,14 +139,14 @@ exports.register = async (req, res) => {
       userData = {
         ...userData,
         organizationName,
-        legalTrack,
+        organizationType,
         county,
         subCounty,
         organizationEmail,
         organizationPhone,
         yearOfEstablishment,
         password: await bcrypt.hash(password, 12),
-        role: 'organization'
+        role: 'public_user' // Default role for new organizations
       };
     }
 
@@ -169,12 +187,13 @@ exports.register = async (req, res) => {
     });
 
     // Generate token
+    // For new registrations, twoFactorConfirmed should be true if user hasn't enabled 2FA yet
     const token = generateToken(user._id, false, {
       sessionId,
       tokenVersion: user.tokenVersion || 0,
       deviceInfo: requestInfo.deviceInfo,
       ip: requestInfo.ip,
-      twoFactorConfirmed: false
+      twoFactorConfirmed: !user.twoFactorEnabled  // true if 2FA not enabled, false if enabled
     });
 
     // Set secure cookie
@@ -193,11 +212,21 @@ exports.register = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        phone: user.phone,
         organizationName: user.organizationName,
+        organizationType: user.organizationType,
+        county: user.county,
+        subCounty: user.subCounty,
         organizationEmail: user.organizationEmail,
+        organizationPhone: user.organizationPhone,
+        yearOfEstablishment: user.yearOfEstablishment,
         role: user.role,
         logo: user.logo,
-        accountStatus: user.accountStatus
+        accountStatus: user.accountStatus,
+        twoFactorEnabled: user.twoFactorEnabled,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       },
       token,
       recoveryKey: plainKey,
@@ -208,7 +237,7 @@ exports.register = async (req, res) => {
     // Send welcome email
     await sendEmail({
       to: user.email || user.organizationEmail,
-      subject: 'Welcome to Huduma Hub',
+      subject: 'Welcome to Kenya Digital Health Agency',
       html: createWelcomeEmail({ name: user.firstName || user.organizationName || plainKey })
     });
 
@@ -220,11 +249,29 @@ exports.register = async (req, res) => {
 
 // Updated login function with account-first security priority and failed attempts reset
 exports.login = async (req, res) => {
-  const { identifier, password, twoFactorCode } = req.body; // Accept twoFactorCode
+  console.log('[LOGIN] Request received:', { identifier: req.body.identifier });
+  const { identifier, password, twoFactorCode, captchaAnswer, captchaToken } = req.body; // Accept twoFactorCode and CAPTCHA
   const requestInfo = getRequestInfo(req);
 
   if (!identifier || !password) {
+    console.log('[LOGIN] Missing credentials');
     return res.status(400).json({ message: 'Identifier and password are required', code: 'MISSING_CREDENTIALS' });
+  }
+
+  // Verify CAPTCHA for login
+  if (!captchaAnswer || !captchaToken) {
+    return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
+  }
+
+  if (!verifyCaptcha(captchaAnswer, captchaToken)) {
+    await logSecurityEvent({
+      action: 'Failed CAPTCHA Verification',
+      severity: 'medium',
+      ip: requestInfo.ip,
+      device: requestInfo.deviceString,
+      details: { attemptedLogin: true }
+    });
+    return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
   }
 
   try {
@@ -410,9 +457,14 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Update last login, sessions, and devices using atomic operation to avoid version conflicts
+    const updateData = {
+      lastLogin: new Date(),
+      sessions: user.sessions,
+      knownDevices: user.knownDevices
+    };
+
+    await User.findByIdAndUpdate(user._id, updateData, { new: false });
 
     // Generate token
     const token = generateToken(user._id, twoFactorPassed, {
@@ -559,14 +611,16 @@ async function getAccountSecurityState(email) {
 async function getSystemUserId() {
   try {
     // Try to find a system user, or create one if it doesn't exist
-    let systemUser = await User.findOne({ email: 'system@internal.app', role: 'admin' });
+    let systemUser = await User.findOne({ email: 'system@internal.app', role: 'dha_system_administrator' });
 
     if (!systemUser) {
       // Create system user if it doesn't exist
       systemUser = new User({
-        name: 'System',
+        type: 'individual',
+        firstName: 'System',
+        lastName: 'Administrator',
         email: 'system@internal.app',
-        role: 'admin',
+        role: 'dha_system_administrator',
         password: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12),
         suspended: false,
         isSystemAccount: true
@@ -1380,12 +1434,13 @@ exports.setupPassword = async (req, res) => {
     });
 
     // Generate token
+    // For password setup, twoFactorConfirmed should be true if user hasn't enabled 2FA yet
     const authToken = generateToken(user._id, false, {
       sessionId,
       tokenVersion: user.tokenVersion || 0,
       deviceInfo: requestInfo.deviceInfo,
       ip: requestInfo.ip,
-      twoFactorConfirmed: false
+      twoFactorConfirmed: !user.twoFactorEnabled  // true if 2FA not enabled, false if enabled
     });
 
     // Set secure cookie
@@ -2012,7 +2067,7 @@ function createBoardMemberSetupEmail({ name, boardRole, setupToken, recoveryKey,
                 <p>If you have any questions or need assistance, please contact the system administrator.</p>
                 
                 <p>Welcome aboard!<br>
-                <strong>Huduma Hub Team</strong></p>
+                <strong>Kenya Digital Health Agency Team</strong></p>
             </div>
         </div>
     </body>

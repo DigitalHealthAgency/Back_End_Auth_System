@@ -64,7 +64,7 @@ const SystemSettingsSchema = new mongoose.Schema({
   },
   require2FA: {
     type: Boolean,
-    default: false
+    default: true  // ✅ FIXED: Mandatory 2FA globally
   },
   enableNotifications: {
     type: Boolean,

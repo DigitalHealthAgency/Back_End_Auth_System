@@ -1,5 +1,5 @@
 {
-  "name": "huduma-hub-auth",
+  "name": "kenya-dha-auth",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,15 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:internal": "node test-internal-endpoints.js"
+    "test:internal": "node test-internal-endpoints.js",
+    "test:unit": "jest tests/unit --maxWorkers=4",
+    "test:integration": "jest tests/integration --maxWorkers=2 --runInBand",
+    "test:security": "jest tests/security --maxWorkers=2",
+    "test:rbac": "jest tests/rbac --maxWorkers=2",
+    "test:performance": "jest tests/performance --maxWorkers=1 --runInBand",
+    "test:all": "jest --coverage --maxWorkers=4",
+    "test:ci": "jest --coverage --ci --maxWorkers=2 --forceExit",
+    "coverage:report": "jest --coverage --coverageReporters=html && open coverage/index.html"
   },
   "keywords": [],
   "author": "",

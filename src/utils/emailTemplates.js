@@ -6,7 +6,7 @@ const createWelcomeEmail = (user, plainKey) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Huduma Hub</title>
+      <title>Welcome to Kenya Digital Health Agency</title>
       <style>
         body {
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -248,40 +248,41 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1 class="logo-text">Huduma Hub</h1>
-          <p class="tagline">Transforming Kenya's Civil Society Through Digital Inclusion</p>
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 80px; margin-bottom: 15px;">
+          <h1 class="logo-text">Kenya DHA</h1>
+          <p class="tagline">Advancing Digital Health Excellence in Kenya</p>
         </div>
         
         <div class="content">
-          <div class="welcome-badge">🎉 Welcome to the Community</div>
-          <h1>Your Digital Transformation Journey Begins Now!</h1>
+          <div class="welcome-badge">🎉 Welcome to Kenya DHA</div>
+          <h1>Your Digital Health Certification Journey Begins Now!</h1>
           
           <p class="user-greeting">Hello <strong>${user.name || user.organizationName || user.firstName || 'User'}</strong>,</p>
           
           <div class="platform-intro">
-            <p><strong>Welcome to Huduma Hub</strong> - Kenya's premier digital platform for civil society organizations. We're excited to have you join thousands of CBOs, PBOs, and community groups who are transforming their operations through digital innovation.</p>
+            <p><strong>Welcome to Kenya Digital Health Agency (DHA)</strong> - Kenya's official digital health certification and regulation platform. We're excited to have you join our mission to standardize and improve digital health systems across Kenya.</p>
           </div>
           
           <div class="features-grid">
             <div class="feature-item">
               <div class="feature-icon">📋</div>
-              <div class="feature-title">Legal Registration</div>
-              <div class="feature-desc">Streamlined registration under PBO Act 2024 and Community Groups Registration Act 2022</div>
+              <div class="feature-title">Digital Health Certification</div>
+              <div class="feature-desc">Official certification for digital health applications and systems</div>
             </div>
             <div class="feature-item">
               <div class="feature-icon">💰</div>
-              <div class="feature-title">Financial Management</div>
-              <div class="feature-desc">Complete financial tools including budgeting, accounting, and donor reporting</div>
+              <div class="feature-title">Compliance Management</div>
+              <div class="feature-desc">Ensure your digital health solutions meet national standards and regulations</div>
             </div>
             <div class="feature-item">
               <div class="feature-icon">👥</div>
-              <div class="feature-title">Governance & HR</div>
-              <div class="feature-desc">Digital governance tools, board management, and HR systems</div>
+              <div class="feature-title">Application Registry</div>
+              <div class="feature-desc">Public registry of certified digital health solutions in Kenya</div>
             </div>
             <div class="feature-item">
               <div class="feature-icon">📊</div>
-              <div class="feature-title">M&E & Projects</div>
-              <div class="feature-desc">Project management with integrated monitoring and evaluation frameworks</div>
+              <div class="feature-title">Testing & Validation</div>
+              <div class="feature-desc">Comprehensive testing and validation of your health IT systems</div>
             </div>
           </div>
           
@@ -292,15 +293,15 @@ const createWelcomeEmail = (user, plainKey) => {
           </div>
           
           <div style="text-align: center;">
-            <a href="https://hudumahub.co.ke/login" class="button">Access Your Dashboard</a>
+            <a href="${process.env.FRONTEND_URL}/login" class="button">Access Your Dashboard</a>
           </div>
           
           <div class="next-steps">
             <h3>🚀 Get Started in 3 Easy Steps:</h3>
             <ul class="steps-list">
-              <li>Complete your organization profile and upload required documents</li>
-              <li>Take the digital readiness assessment to unlock personalized training</li>
-              <li>Begin your legal registration process or access operational tools</li>
+              <li>Complete your profile and set up two-factor authentication for security</li>
+              <li>Submit your digital health application for certification review</li>
+              <li>Track your application status and receive certification updates</li>
             </ul>
           </div>
           
@@ -308,12 +309,12 @@ const createWelcomeEmail = (user, plainKey) => {
           
           <div class="help-section">
             <h3 class="help-title">🤝 Need Support?</h3>
-            <p class="help-text">Our team is here to help you maximize your experience on Huduma Hub. Whether you need technical assistance, training, or guidance on compliance requirements, we're just a click away.</p>
+            <p class="help-text">Our team is here to help you navigate the digital health certification process. Whether you need technical assistance, training, or guidance on compliance requirements, we're just a click away.</p>
             
             <div class="contact-info">
               <div class="contact-item">
                 <strong>📧 Email Support</strong><br>
-                <a href="mailto:support@hudumahub.co.ke" style="color: #3b82f6;">support@hudumahub.co.ke</a>
+                <a href="mailto:${process.env.SUPPORT_EMAIL || 'support@dha.go.ke'}" style="color: #3b82f6;">${process.env.SUPPORT_EMAIL || 'support@dha.go.ke'}</a>
               </div>
               <div class="contact-item">
                 <strong>💬 Live Chat</strong><br>
@@ -327,18 +328,19 @@ const createWelcomeEmail = (user, plainKey) => {
           </div>
           
           <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #3b82f6;">
-            <p style="margin: 0; color: #1e40af; font-weight: 600;">🎯 Join 10,000+ organizations transforming their operations through Huduma Hub</p>
-            <p style="margin: 10px 0 0 0; color: #1e3a8a; font-size: 14px;">Together, we're building a digitally empowered civil society in Kenya.</p>
+            <p style="margin: 0; color: #1e40af; font-weight: 600;">🎯 Join Kenya's digital health transformation initiative</p>
+            <p style="margin: 10px 0 0 0; color: #1e3a8a; font-size: 14px;">Together, we're ensuring safe, effective digital health solutions for all Kenyans.</p>
           </div>
         </div>
         
         <div class="footer">
-          <div class="footer-logo">Huduma Hub</div>
-          <p>Empowering Civil Society Through Digital Innovation</p>
-          <p>© ${new Date().getFullYear()} Reprodrive Center for Innovation Ltd. All rights reserved.</p>
-          <p>📍 5th Floor Hifadhi House, ICD Road, Embakasi South</p>
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 50px; margin-bottom: 10px;">
+          <div class="footer-logo">Kenya DHA</div>
+          <p>Advancing Digital Health Excellence in Kenya</p>
+          <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
+          <p>📍 Ministry of Health, Afya House, Cathedral Road, Nairobi</p>
           <p style="margin-top: 15px; font-size: 12px; color: #9ca3af;">
-            This email was sent to you because you created an account on Huduma Hub.<br>
+            This email was sent to you because you created an account on the Kenya Digital Health Agency platform.<br>
             If you have any questions, please contact our support team.
           </p>
         </div>
@@ -442,13 +444,13 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/Huduma Hub-logo_d86yas.png" alt="Huduma Hub Logo">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
           <div class="alert-icon">🔐</div>
           <h1>New Login Detected</h1>
           <p>Hi <strong>${user.name}</strong>,</p>
-          <p>We detected a new login to your Huduma Hub account. If this was you, no action is needed.</p>
+          <p>We detected a new login to your Kenya Digital Health Agency account. If this was you, no action is needed.</p>
           
           <div class="login-details">
             <table>
@@ -467,7 +469,7 @@ const createWelcomeEmail = (user, plainKey) => {
             </table>
           </div>
           
-          <a href="https://Huduma Hubapp.com/account/security" class="button">Review Security Settings</a>
+          <a href="${process.env.FRONTEND_URL}/account/security" class="button">Review Security Settings</a>
           
           <div class="warning">
             <p><strong>Don't recognize this activity?</strong> Please secure your account immediately by changing your password and enabling two-factor authentication.</p>
@@ -475,10 +477,10 @@ const createWelcomeEmail = (user, plainKey) => {
           
           <div class="divider"></div>
           
-          <p>If you need assistance, please contact our support team at <a href="mailto:support@Huduma Hubapp.com">support@Huduma Hubapp.com</a>.</p>
+          <p>If you need assistance, please contact our support team at <a href="mailto:${process.env.SUPPORT_EMAIL || 'support@dha.go.ke'}">${process.env.SUPPORT_EMAIL || 'support@dha.go.ke'}</a>.</p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} Huduma Hub. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
           <p>📍 5th Floor Hifadhi House, ICD Road, Embakasi South</p>
         </div>
       </div>
@@ -570,12 +572,12 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/Huduma Hub-logo_d86yas.png" alt="Huduma Hub Logo">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
           <h1>Password Reset Code</h1>
           <p>Hello,</p>
-          <p>We received a request to reset the password for your Huduma Hub account associated with ${email}.</p>
+          <p>We received a request to reset the password for your Kenya DHA account associated with ${email}.</p>
           
           <div class="code-container">
             <p>Your verification code is:</p>
@@ -592,7 +594,7 @@ const createWelcomeEmail = (user, plainKey) => {
           <p>For security reasons, this code can only be used once. If you need assistance, please contact our support team at <a href="mailto:support@Huduma Hubapp.com">support@Huduma Hubapp.com</a>.</p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} Huduma Hub. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
           <p>📍 5th Floor Hifadhi House, ICD Road, Embakasi South</p>
         </div>
       </div>
@@ -686,7 +688,7 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/Huduma Hub-logo_d86yas.png" alt="Huduma Hub Logo">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
           <h1>⚠️ Cron Job Error Alert</h1>
@@ -703,10 +705,10 @@ const createWelcomeEmail = (user, plainKey) => {
           
           <div class="divider"></div>
           
-          <p>This is an automated notification from the Huduma Hub system monitoring service.</p>
+          <p>This is an automated notification from the Kenya Digital Health Agency system monitoring service.</p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} Huduma Hub. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
           <p>📍 5th Floor Hifadhi House, ICD Road, Embakasi South</p>
         </div>
       </div>
@@ -1090,11 +1092,12 @@ const createWelcomeEmail = (user, plainKey) => {
       <body>
           <div class="container">
               <div class="header">
+                  <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 60px; margin-bottom: 10px;">
                   <h1>Action Required: Complete Your Subscription Payment</h1>
               </div>
               <div class="content">
                   <h2>Hello ${user.name},</h2>
-                  <p>Thank you for choosing the <strong>${plan.name}</strong> plan on Huduma Hub.</p>
+                  <p>Thank you for choosing the <strong>${plan.name}</strong> plan on Kenya DHA.</p>
                   <div class="details">
                     <ul>
                       <li><strong>Plan:</strong> ${plan.name}</li>
@@ -1107,10 +1110,12 @@ const createWelcomeEmail = (user, plainKey) => {
                   <p>If the button above does not work, copy and paste the following link into your browser:</p>
                   <p><a href="${paymentUrl}">${paymentUrl}</a></p>
                   <p>If you have any questions or need assistance, please contact our support team at <a href="mailto:support@Huduma Hubapp.com">support@Huduma Hubapp.com</a>.</p>
-                  <p>Thank you for being a valued member of Huduma Hub!</p>
+                  <p>Thank you for being a valued member of Kenya Digital Health Agency!</p>
               </div>
               <div class="footer">
-                  <p>&copy; ${new Date().getFullYear()} Huduma Hub. All rights reserved.</p>
+                  <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 40px; margin-bottom: 8px;">
+                  <p>&copy; ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
+                  <p>📍 Ministry of Health, Afya House, Cathedral Road, Nairobi</p>
               </div>
           </div>
       </body>

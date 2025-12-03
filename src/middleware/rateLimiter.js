@@ -48,8 +48,21 @@ const forgotPasswordLimiter = rateLimit({
   }
 });
 
+// CAPTCHA generation limiter - 20 requests per 15 minutes
+const captchaLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 CAPTCHA requests per 15 minutes
+  message: {
+    message: 'Too many CAPTCHA requests from this IP, please try again later.',
+    code: 'RATE_LIMIT_EXCEEDED'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 module.exports = {
   invoiceLimiter,
   sensitiveOpLimiter,
-  forgotPasswordLimiter
+  forgotPasswordLimiter,
+  captchaLimiter
 };

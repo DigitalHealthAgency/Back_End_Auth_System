@@ -2,8 +2,11 @@
 const express = require('express');
 //const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const passport = require('./config/passport');
 const authRoutes = require('./routes/authRoutes');
 const passwordRoutes = require('./routes/passwordRoutes');
+const captchaRoutes = require('./routes/captchaRoutes');
+const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const userServiceRoutes = require('./routes/userServiceRoutes');
 const { 
   checkIPSecurity, 
@@ -30,6 +33,9 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
 
+// Initialize Passport
+app.use(passport.initialize());
+
 // Security middleware chain
 // NOTE: Rate limiting is handled by API Gateway layer
 // Only apply threat detection and IP security here
@@ -40,7 +46,7 @@ app.use(advancedThreatDetection);
 
 // Default route
 app.get('/', (req, res) => {
-  res.send('Huduma Hub is running...');
+  res.send('Kenya Digital Health Agency Auth Service is running...');
 });
 
 // Health check endpoint
@@ -53,11 +59,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Auth route
+// Auth routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 
 // Password reset routes
 app.use('/api/password', passwordRoutes);
+
+// CAPTCHA routes
+app.use('/api/captcha', captchaRoutes);
 
 // User service routes (for microservice communication)
 app.use('/api/users', userServiceRoutes);

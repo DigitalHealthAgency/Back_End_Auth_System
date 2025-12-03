@@ -1,8 +1,8 @@
 const Joi = require('joi');
 
-// Password complexity: min 8 chars, upper, lower, number, special
+// Password complexity: min 12 chars (SRS Requirement), upper, lower, number, special
 const passwordComplexity = Joi.string()
-  .min(8)
+  .min(12)  // ✅ FIXED: Changed from 8 to 12 characters (SRS Compliance)
   .max(64)
   .pattern(/[A-Z]/, 'uppercase')
   .pattern(/[a-z]/, 'lowercase')
@@ -11,7 +11,7 @@ const passwordComplexity = Joi.string()
   .required()
   .messages({
     'string.pattern.name': 'Password must include at least one {#name} character',
-    'string.min': 'Password must be at least {#limit} characters',
+    'string.min': 'Password must be at least {#limit} characters (SRS requirement)',
     'string.max': 'Password must be at most {#limit} characters'
   });
 
@@ -33,7 +33,11 @@ const individualSchema = Joi.object({
 const organizationSchema = Joi.object({
   type: Joi.string().valid('organization').required(),
   organizationName: Joi.string().max(128).required(),
-  legalTrack: Joi.string().valid('PBO', 'CBO', 'CGRA', 'NPO', 'CSO').required(),
+  organizationType: Joi.string().valid(
+    'HOSPITAL', 'CLINIC', 'HEALTH_CENTER', 'DISPENSARY', 'LABORATORY', 'PHARMACY',
+    'DENTAL', 'IMAGING', 'SPECIALIST', 'REHAB', 'EMR', 'EHR', 'LIS', 'PIS', 'RIS',
+    'HMIS', 'TELEMED', 'HEALTH_APP', 'HIE', 'INSURANCE', 'PUBLIC_HEALTH'
+  ).required(),
   county: Joi.string().max(64).required(),
   subCounty: Joi.string().max(64).required(),
   organizationEmail: Joi.string().email({ tlds: { allow: false } }).required(),

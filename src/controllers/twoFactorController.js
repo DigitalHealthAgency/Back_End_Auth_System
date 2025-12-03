@@ -14,7 +14,7 @@ exports.generate2FASecret = async (req, res) => {
     const accountEmail = user.organizationEmail || user.email;
 
     const secret = speakeasy.generateSecret({
-      name: `Huduma Hub (${accountEmail})`
+      name: `Kenya DHA (${accountEmail})`
     });
 
     user.twoFactorTempSecret = secret.base32;

@@ -10,7 +10,7 @@ if (process.env.RESEND_API_KEY) {
 }
 
 // Define a default sender if environment variable is missing
-const DEFAULT_FROM = process.env.FROM_EMAIL || 'Huduma Hub <info@mdskenya.com>';
+const DEFAULT_FROM = process.env.FROM_EMAIL || 'Kenya Digital Health Agency <noreply@dha.go.ke>';
 
 const sendEmail = async ({ to, subject, text, html }) => {
   // Check if Resend client is available

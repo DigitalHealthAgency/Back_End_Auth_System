@@ -1,13 +1,14 @@
 // src/routes/passwordRoutes.js
 const express = require('express');
 const router = express.Router();
-const { forgotPassword, verifyCode, recoveryLogin } = require('../controllers/passwordController');
+const { forgotPassword, verifyCode, resetPassword, recoveryLogin } = require('../controllers/passwordController');
 const validate = require('../middleware/validate');
-const { forgotPasswordSchema, verifyCodeSchema, recoveryLoginSchema } = require('../validators/passwordValidator');
+const { forgotPasswordSchema, verifyCodeSchema, resetPasswordSchema, recoveryLoginSchema } = require('../validators/passwordValidator');
 const { forgotPasswordLimiter } = require('../middleware/rateLimiter');
 
 router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), forgotPassword);
 router.post('/verify-code', validate(verifyCodeSchema), verifyCode);
+router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
 router.post('/recovery-login', validate(recoveryLoginSchema), recoveryLogin);
 
 module.exports = router;

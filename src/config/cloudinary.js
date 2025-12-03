@@ -13,7 +13,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'huduma-hub/logos',
+    folder: 'kenya-dha/logos',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
     transformation: [{ width: 400, height: 400, crop: 'limit', quality: 'auto' }]
   }
