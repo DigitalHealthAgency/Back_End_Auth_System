@@ -21,6 +21,7 @@ const {
 } = require('../utils/emailTemplates');
 const speakeasy = require('speakeasy');
 const { verifyCaptcha } = require('../utils/captcha');
+const { getRolePortal, getRoleDisplayName } = require('../constants/roles');
 
 const accountSecurityState = new Map();
 
@@ -124,7 +125,7 @@ exports.register = async (req, res) => {
         return res.status(409).json({ message: 'Username or email already exists', code: 'USER_EXISTS' });
       }
       
-      // Set role to system administrator for specific hardcoded email
+      // Set role to system administrator for specific hardcoded email, otherwise public_user for individuals
       const role = email === 'ianmathew186@gmail.com' ? 'dha_system_administrator' : 'public_user';
 
       userData = { ...userData, username, firstName, lastName, email, phone, password: await bcrypt.hash(password, 12), role };
@@ -146,7 +147,7 @@ exports.register = async (req, res) => {
         organizationPhone,
         yearOfEstablishment,
         password: await bcrypt.hash(password, 12),
-        role: 'public_user' // Default role for new organizations
+        role: 'vendor_developer' // Default role for new organizations - they are vendors submitting applications
       };
     }
 
@@ -494,7 +495,10 @@ exports.login = async (req, res) => {
         email: user.email,
         organizationName: user.organizationName,
         organizationEmail: user.organizationEmail,
+        organizationType: user.organizationType,
         role: user.role,
+        roleDisplayName: getRoleDisplayName(user.role),
+        portal: getRolePortal(user.role),
         logo: user.logo,
         twoFactorEnabled: user.twoFactorEnabled || false,
         accountStatus: user.accountStatus
@@ -688,6 +692,8 @@ exports.getProfile = async (req, res) => {
 
     const profile = {
       ...user.toObject(),
+      roleDisplayName: getRoleDisplayName(user.role),
+      portal: getRolePortal(user.role),
       lastUpdated: user.updatedAt,
     };
 

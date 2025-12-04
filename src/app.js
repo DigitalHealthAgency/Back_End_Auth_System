@@ -8,6 +8,7 @@ const passwordRoutes = require('./routes/passwordRoutes');
 const captchaRoutes = require('./routes/captchaRoutes');
 const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const userServiceRoutes = require('./routes/userServiceRoutes');
+const roleRoutes = require('./routes/roleRoutes');
 const { 
   checkIPSecurity, 
   detectSuspiciousActivity,
@@ -76,6 +77,9 @@ app.use('/api/captcha', captchaRoutes);
 
 // User service routes (for microservice communication)
 app.use('/api/users', userServiceRoutes);
+
+// Role management routes
+app.use('/api/roles', roleRoutes);
 
 // Recovery PDF route - serve the PDF from the temp folder
 app.use('/recovery', recoveryRoutes);
