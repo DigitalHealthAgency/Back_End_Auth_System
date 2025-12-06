@@ -87,18 +87,11 @@ jobs:
         run: npm test -- --coverage --coverageReporters=html
 
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report-node-${{ matrix.node-version }}
           path: coverage/
           retention-days: 7
-
-      - name: Comment PR with coverage
-        if: github.event_name == 'pull_request'
-        uses: dkhunt27/action-nx-stylelint-coverage@v1
-        with:
-          coverage-file: ./coverage/coverage-summary.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   performance:
     name: Performance Tests
@@ -141,7 +134,7 @@ jobs:
         timeout-minutes: 10
 
       - name: Upload performance results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: performance-results
           path: performance-results.json
