@@ -65,21 +65,86 @@ exports.verifyCode = async (req, res) => {
     if (record.expiresAt < new Date())
       return res.status(400).json({ message: 'Code expired' });
 
-    // Mark the code as verified but don't delete yet - user still needs to reset password
+    // Find user by either email or organizationEmail
+    const user = await User.findOne({
+      $or: [
+        { email },
+        { organizationEmail: email }
+      ]
+    });
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Mark the code as verified
     record.verified = true;
     await record.save();
 
     await logActivity({
-      user: null, // User not logged in yet
+      user: user._id,
       action: 'PASSWORD_RESET_CODE_VERIFIED',
       description: `Password reset code verified for email: ${email}`,
       ip: req.ip,
       userAgent: req.headers['user-agent']
     });
 
+    // Create session and log the user in immediately after code verification
+    const sessionId = require('crypto').randomUUID();
+    user.sessions = user.sessions || [];
+    user.sessions.unshift({
+      sessionId,
+      ip: req.ip,
+      device: req.headers['user-agent'] || 'Unknown',
+      createdAt: new Date()
+    });
+    if (user.sessions.length > 5) user.sessions = user.sessions.slice(0, 5);
+
+    // Reset failed attempts and unlock account
+    user.failedAttempts = 0;
+    user.lockedUntil = undefined;
+
+    await user.save();
+
+    // Generate token with sessionId and twoFactorConfirmed flag
+    const { generateToken } = require('../utils/generateToken');
+    const token = generateToken(user._id, false, {
+      sessionId,
+      tokenVersion: user.tokenVersion || 0,
+      ip: req.ip,
+      deviceInfo: req.headers['user-agent'] || 'Unknown',
+      twoFactorConfirmed: true
+    });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/'
+    });
+
+    // Import role utilities
+    const { getRolePortal, getRoleDisplayName } = require('../constants/roles');
+
     res.status(200).json({
-      message: 'Code verified successfully. Please set your new password.',
-      email: email // Return email so frontend can use it in reset password request
+      user: {
+        _id: user._id,
+        type: user.type,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        organizationName: user.organizationName,
+        organizationEmail: user.organizationEmail,
+        organizationType: user.organizationType,
+        role: user.role,
+        roleDisplayName: getRoleDisplayName(user.role),
+        portal: getRolePortal(user.role),
+        logo: user.logo,
+        twoFactorEnabled: user.twoFactorEnabled || false,
+        accountStatus: user.accountStatus,
+        firstTimeSetup: user.firstTimeSetup || false
+      },
+      token
     });
   } catch (err) {
     console.error(err);
@@ -194,7 +259,7 @@ exports.resetPassword = async (req, res) => {
       tokenVersion: user.tokenVersion || 0,
       ip: req.ip,
       deviceInfo: req.headers['user-agent'] || 'Unknown',
-      twoFactorConfirmed: false
+      twoFactorConfirmed: true
     });
 
     res.cookie('token', token, {
@@ -274,7 +339,7 @@ exports.recoveryLogin = async (req, res) => {
       tokenVersion: user.tokenVersion || 0,
       ip: req.ip,
       deviceInfo: req.headers['user-agent'] || 'Unknown',
-      twoFactorConfirmed: false
+      twoFactorConfirmed: true
     });
 
     res.cookie('token', token, {

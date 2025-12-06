@@ -248,7 +248,7 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 80px; margin-bottom: 15px;">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 80px; margin-bottom: 15px;">
           <h1 class="logo-text">Kenya DHA</h1>
           <p class="tagline">Advancing Digital Health Excellence in Kenya</p>
         </div>
@@ -334,7 +334,7 @@ const createWelcomeEmail = (user, plainKey) => {
         </div>
         
         <div class="footer">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 50px; margin-bottom: 10px;">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 50px; margin-bottom: 10px;">
           <div class="footer-logo">Kenya DHA</div>
           <p>Advancing Digital Health Excellence in Kenya</p>
           <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
@@ -444,7 +444,7 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
           <div class="alert-icon">🔐</div>
@@ -572,7 +572,7 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
           <h1>Password Reset Code</h1>
@@ -688,7 +688,7 @@ const createWelcomeEmail = (user, plainKey) => {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo">
+          <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
           <h1>⚠️ Cron Job Error Alert</h1>
@@ -1092,7 +1092,7 @@ const createWelcomeEmail = (user, plainKey) => {
       <body>
           <div class="container">
               <div class="header">
-                  <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 60px; margin-bottom: 10px;">
+                  <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 60px; margin-bottom: 10px;">
                   <h1>Action Required: Complete Your Subscription Payment</h1>
               </div>
               <div class="content">
@@ -1113,7 +1113,7 @@ const createWelcomeEmail = (user, plainKey) => {
                   <p>Thank you for being a valued member of Kenya Digital Health Agency!</p>
               </div>
               <div class="footer">
-                  <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 40px; margin-bottom: 8px;">
+                  <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo" style="max-height: 40px; margin-bottom: 8px;">
                   <p>&copy; ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
                   <p>📍 Ministry of Health, Afya House, Cathedral Road, Nairobi</p>
               </div>

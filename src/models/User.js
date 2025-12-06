@@ -131,6 +131,7 @@ const userSchema = new mongoose.Schema({
     ],
     sparse: true
   },
+  county: { type: String },
   subCounty: { type: String },
   organizationEmail: {
     type: String,
@@ -208,8 +209,53 @@ const userSchema = new mongoose.Schema({
   // Account Status
   accountStatus: {
     type: String,
-    enum: ['active', 'inactive', 'terminated', 'cancelled', 'suspended', 'pending_registration', 'submitted', 'under_review', 'clarification', 'approved', 'rejected', 'certified', 'pending_setup'],
-    default: 'active'
+    enum: [
+      'active',                    // Fully operational account
+      'inactive',                  // Temporarily disabled
+      'terminated',                // Account ended (can be reactivated)
+      'deactivated',              // Permanently disabled (cannot be reactivated)
+      'cancelled',                 // User-initiated cancellation
+      'suspended',                 // Temporarily suspended by admin
+      'pending_verification',      // Account created, awaiting verification
+      'pending_registration',      // Registration started but not completed
+      'pending_setup',             // Account created, needs first-time setup
+      'role_update_pending',       // Role change in progress
+      'submitted',                 // Organization application submitted
+      'under_review',              // Under DHA review
+      'clarification',             // Needs clarification from user
+      'approved',                  // Application approved
+      'rejected',                  // Application rejected
+      'certified'                  // Fully certified
+    ],
+    default: 'pending_verification'  // New accounts start as pending verification
+  },
+
+  // Role Update Tracking
+  pendingRoleChange: {
+    newRole: {
+      type: String,
+      enum: [
+        'vendor_developer',
+        'vendor_technical_lead',
+        'vendor_compliance_officer',
+        'dha_system_administrator',
+        'dha_certification_officer',
+        'testing_lab_staff',
+        'certification_committee_member',
+        'county_health_officer',
+        'public_user'
+      ]
+    },
+    requestedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    requestedAt: { type: Date },
+    reason: { type: String },
+    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    approvedAt: { type: Date },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    }
   },
 
   // Recovery Key
@@ -287,6 +333,24 @@ const userSchema = new mongoose.Schema({
   }
 
 }, { timestamps: true });
+
+/**
+ * ========================================
+ * MIDDLEWARE - STATE MACHINE VALIDATION
+ * ========================================
+ */
+
+// Store original state before changes
+userSchema.pre('save', function(next) {
+  if (!this.isNew && this.isModified('accountStatus')) {
+    this._original = { accountStatus: this.constructor.findOne({ _id: this._id }).accountStatus };
+  }
+  next();
+});
+
+// Validate state transitions using state machine
+const { validateStateTransition } = require('../utils/stateMachine');
+userSchema.pre('save', validateStateTransition);
 
 // Conditional unique indexes for email based on organization membership
 // Users belonging to organizations: email unique within organization

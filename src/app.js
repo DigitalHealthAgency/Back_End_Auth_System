@@ -9,10 +9,15 @@ const captchaRoutes = require('./routes/captchaRoutes');
 const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const userServiceRoutes = require('./routes/userServiceRoutes');
 const roleRoutes = require('./routes/roleRoutes');
-const { 
-  checkIPSecurity, 
+const teamRoutes = require('./routes/teamRoutes');
+const suspensionAppealRoutes = require('./routes/suspensionAppealRoutes');
+const securityAdminRoutes = require('./routes/admin/securityAdminRoutes');
+const adminUsersRoutes = require('./routes/admin/adminUsersRoutes');
+const vendorRoutes = require('./routes/vendor/vendorRoutes');
+const {
+  checkIPSecurity,
   detectSuspiciousActivity,
-  advancedThreatDetection 
+  advancedThreatDetection
   // adaptiveRateLimit - REMOVED: Rate limiting is handled by API Gateway
 } = require('./middleware/ipSecurityMiddleware');
 const recoveryRoutes = require('./routes/recoveryRoutes');
@@ -29,7 +34,7 @@ const app = express();
 // Enable CORS for frontend to send cookies
 const cors = require('cors');
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:8000', 'http://localhost:3000'],
+  origin: ['http://localhost:5173', 'http://localhost:8000', 'http://localhost:3000', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
@@ -81,6 +86,12 @@ app.use('/api/users', userServiceRoutes);
 // Role management routes
 app.use('/api/roles', roleRoutes);
 
+// Team management routes
+app.use('/api/team', teamRoutes);
+
+// Suspension appeal routes
+app.use('/api/appeals', suspensionAppealRoutes);
+
 // Recovery PDF route - serve the PDF from the temp folder
 app.use('/recovery', recoveryRoutes);
 
@@ -89,6 +100,15 @@ app.use('/api/two-factor', twoFactorRoutes);
 
 // Cron job management routes
 app.use('/api/cron', cronRoutes);
+
+// Admin security routes
+app.use('/api/admin/security', securityAdminRoutes);
+
+// Admin users routes
+app.use('/api/admin/users', adminUsersRoutes);
+
+// Vendor routes
+app.use('/api/vendor', vendorRoutes);
 
 // Set the cron manager instance for the routes
 setCronManager(cronManager);

@@ -44,6 +44,8 @@ passport.use(
           // Link Google account to existing user
           user.googleId = googleId;
           user.lastLogin = new Date();
+          user.twoFactorEnabled = false; // Disable 2FA when linking Google
+          user.twoFactorSetupRequired = false;
           await user.save();
           return done(null, user);
         }
@@ -68,8 +70,11 @@ passport.use(
           googleId,
           type: 'individual', // Default to individual user type
           role: 'public_user', // Default role
+          accountStatus: 'active', // Google users are active immediately
           isEmailVerified: true, // Google email is already verified
           receiveSystemAlerts: true,
+          twoFactorEnabled: false, // Disable 2FA for Google OAuth users
+          twoFactorSetupRequired: false, // Don't require 2FA setup
           password: null, // No password for Google auth users
           lastLogin: new Date()
         });

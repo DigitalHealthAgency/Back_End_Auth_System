@@ -16,8 +16,25 @@ exports.googleAuthSuccess = async (req, res) => {
       });
     }
 
-    // Generate JWT token
-    const token = generateToken(user);
+    // Generate JWT token with twoFactorConfirmed (Google OAuth users skip 2FA)
+    const crypto = require('crypto');
+    const sessionId = crypto.randomUUID();
+    const token = generateToken(user._id, true, {
+      sessionId,
+      tokenVersion: user.tokenVersion || 0,
+      twoFactorConfirmed: true
+    });
+
+    // Add session to user
+    user.sessions = user.sessions || [];
+    user.sessions.unshift({
+      sessionId,
+      ip: req.ip || 'unknown',
+      device: req.headers['user-agent'] || 'Google OAuth',
+      createdAt: new Date()
+    });
+    if (user.sessions.length > 5) user.sessions = user.sessions.slice(0, 5);
+    await user.save();
 
     console.log(`Google OAuth success: ${user.email} (${user.username})`);
 

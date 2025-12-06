@@ -15,6 +15,8 @@ const activityLogSchema = new mongoose.Schema({
             'PASSWORD_CHANGE',
             '`Invalid Session',
             'PASSWORD_RESET_REQUEST',
+            'PASSWORD_RESET_CODE_VERIFIED',
+            'PASSWORD_RESET_COMPLETED',
             'RECOVERY_LOGIN',
             'LOGOUT',
             'UPDATE_PROFILE',

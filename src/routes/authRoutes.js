@@ -11,17 +11,17 @@ const {
   setupPasswordSchema,
   createBoardMemberUserSchema
 } = require('../validators/authValidator');
-const { 
-  register, 
-  login, 
-  logout, 
-  getProfile, 
-  updateProfile, 
-  changePassword, 
-  regenerateAccessKey, 
-  uploadLogo, 
-  deleteLogo, 
-  terminateAccount, 
+const {
+  register,
+  login,
+  logout,
+  getProfile,
+  updateProfile,
+  changePassword,
+  regenerateAccessKey,
+  uploadLogo,
+  deleteLogo,
+  terminateAccount,
   abortTermination,
   setupPassword,
   createBoardMemberUser,
@@ -35,11 +35,14 @@ const {
   deactivateUser,
   sendInternalEmail,
   getUserById,
-  getUsersByIds
+  getUsersByIds,
+  createUserByAdmin,
+  firstTimePasswordChange
 } = require('../controllers/authController');
 const auth = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadLogo');
 const { getSessions, terminateSession } = require('../controllers/sessionController');
+const { requireRole } = require('../middleware/rbac');
 
 // Public routes
 router.post('/register', validate(registerSchema), register);
@@ -51,6 +54,10 @@ router.get('/logout', logout);
 router.get('/me', auth, getProfile);
 router.patch('/me', auth, validate(updateProfileSchema), updateProfile);
 router.patch('/change-password', auth, validate(changePasswordSchema), changePassword);
+router.post('/first-time-password-change', auth, firstTimePasswordChange);
+
+// Admin-only routes
+router.post('/admin/create-user', auth, auth.checkFirstTimeSetup, requireRole(['dha_system_administrator']), createUserByAdmin);
 router.post('/regenerate-access-key', auth, regenerateAccessKey);
 router.post('/me/logo', auth, (req, res, next) => {
   //console.log('Logo upload route hit');

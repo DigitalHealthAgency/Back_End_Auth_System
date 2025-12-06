@@ -119,7 +119,32 @@ exports.verify2FACode = async (req, res) => {
         userAgent: req.headers['user-agent']
       });
 
-      res.status(200).json({ message: '2FA enabled successfully' });
+      // Generate new token with twoFactorConfirmed flag so user can continue without re-login
+      const { generateToken } = require('../utils/generateToken');
+      const currentSessionId = req.user.sessionId; // Get current session ID from the existing token
+      const newToken = generateToken(user._id, false, {
+        sessionId: currentSessionId,
+        tokenVersion: user.tokenVersion || 0,
+        twoFactorConfirmed: true // Mark 2FA as confirmed
+      });
+
+      // Update the cookie with the new token
+      res.cookie('token', newToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/'
+      });
+
+      res.status(200).json({
+        message: '2FA enabled successfully',
+        token: newToken,
+        user: {
+          _id: user._id,
+          twoFactorEnabled: true
+        }
+      });
     }
   } catch (err) {
     console.error(err);

@@ -137,12 +137,15 @@ const protect = async (req, res, next) => {
     }
 
     // Check if global 2FA is required or user has enabled 2FA
-    const requires2FA = settings.require2FA || req.user.twoFactorEnabled;
-    
+    // Skip 2FA for Google OAuth users (they have googleId)
+    const isGoogleUser = req.user.googleId && req.user.googleId.length > 0;
+    const requires2FA = !isGoogleUser && (settings.require2FA || req.user.twoFactorEnabled);
+
     if (requires2FA && !decoded.twoFactorConfirmed) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: '2FA verification required',
-        requiresTwoFactor: true
+        requiresTwoFactor: true,
+        code: '2FA_REQUIRED'
       });
     }
 
@@ -260,9 +263,47 @@ const protect = async (req, res, next) => {
 };
 
 /**
+ * Middleware to check if user requires password change on first login
+ * Must be used after the protect middleware
+ * Allows access to password change endpoint and logout
+ */
+const checkFirstTimeSetup = async (req, res, next) => {
+  try {
+    // Skip check for specific routes that should always be accessible
+    const allowedRoutes = [
+      '/api/auth/first-time-password-change',
+      '/api/auth/logout',
+      '/api/auth/profile' // Allow profile read for displaying user info
+    ];
+
+    // If the current route is in the allowed list, proceed
+    if (allowedRoutes.some(route => req.path === route || req.path.startsWith(route))) {
+      return next();
+    }
+
+    // Check if user has firstTimeSetup flag
+    if (req.user && req.user.firstTimeSetup === true) {
+      return res.status(403).json({
+        success: false,
+        message: 'You must change your temporary password before accessing the system.',
+        code: 'FIRST_TIME_SETUP_REQUIRED',
+        requirePasswordChange: true
+      });
+    }
+
+    // User doesn't need to change password, proceed
+    next();
+  } catch (error) {
+    console.error('First-time setup check error:', error);
+    next(); // Don't block on errors, just proceed
+  }
+};
+
+/**
  * Admin-only middleware
  * Checks if the authenticated user has admin role
  * Must be used after the protect middleware
+ * @deprecated Use RBAC middleware from rbac.js instead
  */
 const adminOnly = async (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
@@ -628,6 +669,7 @@ const validateSession = async (req, res, next) => {
 };
 
 // Add all middleware functions to the protect object for export
+protect.checkFirstTimeSetup = checkFirstTimeSetup;
 protect.adminOnly = adminOnly;
 protect.staffOnly = staffOnly;
 protect.reviewerOnly = reviewerOnly;

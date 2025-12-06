@@ -22,12 +22,18 @@ const generateToken = (userId, twoFactorConfirmed = false, options = {}) => {
     impersonatedBy = null,
     expiresIn = '7d',
     deviceInfo = {},
-    ip = null
+    ip = null,
+    twoFactorConfirmed: twoFactorConfirmedOption
   } = options;
+
+  // Allow options.twoFactorConfirmed to override parameter if explicitly set
+  const finalTwoFactorConfirmed = twoFactorConfirmedOption !== undefined
+    ? twoFactorConfirmedOption
+    : twoFactorConfirmed;
 
   const payload = {
     id: userId,
-    twoFactorConfirmed,
+    twoFactorConfirmed: finalTwoFactorConfirmed,
     sessionId,
     tokenVersion,
     iat: Math.floor(Date.now() / 1000),

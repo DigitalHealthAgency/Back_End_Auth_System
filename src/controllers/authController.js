@@ -125,8 +125,9 @@ exports.register = async (req, res) => {
         return res.status(409).json({ message: 'Username or email already exists', code: 'USER_EXISTS' });
       }
       
-      // Set role to system administrator for specific hardcoded email, otherwise public_user for individuals
-      const role = email === 'ianmathew186@gmail.com' ? 'dha_system_administrator' : 'public_user';
+      // Default role for individual self-registration is public_user
+      // System administrators should be created through the admin user creation endpoint
+      const role = 'public_user';
 
       userData = { ...userData, username, firstName, lastName, email, phone, password: await bcrypt.hash(password, 12), role };
     } else if (type === 'organization') {
@@ -260,20 +261,22 @@ exports.login = async (req, res) => {
     return res.status(400).json({ message: 'Identifier and password are required', code: 'MISSING_CREDENTIALS' });
   }
 
-  // Verify CAPTCHA for login
-  if (!captchaAnswer || !captchaToken) {
-    return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
-  }
+  // Verify CAPTCHA for login (skip if 2FA code is provided - CAPTCHA was already verified in first step)
+  if (!twoFactorCode) {
+    if (!captchaAnswer || !captchaToken) {
+      return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
+    }
 
-  if (!verifyCaptcha(captchaAnswer, captchaToken)) {
-    await logSecurityEvent({
-      action: 'Failed CAPTCHA Verification',
-      severity: 'medium',
-      ip: requestInfo.ip,
-      device: requestInfo.deviceString,
-      details: { attemptedLogin: true }
-    });
-    return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
+    if (!verifyCaptcha(captchaAnswer, captchaToken)) {
+      await logSecurityEvent({
+        action: 'Failed CAPTCHA Verification',
+        severity: 'medium',
+        ip: requestInfo.ip,
+        device: requestInfo.deviceString,
+        details: { attemptedLogin: true }
+      });
+      return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
+    }
   }
 
   try {
@@ -501,7 +504,8 @@ exports.login = async (req, res) => {
         portal: getRolePortal(user.role),
         logo: user.logo,
         twoFactorEnabled: user.twoFactorEnabled || false,
-        accountStatus: user.accountStatus
+        accountStatus: user.accountStatus,
+        firstTimeSetup: user.firstTimeSetup || false
       },
       token
     });
@@ -968,6 +972,206 @@ exports.changePassword = async (req, res) => {
     res.status(500).json({
       message: 'Failed to change password',
       code: 'PASSWORD_CHANGE_ERROR'
+    });
+  }
+};
+
+/**
+ * @desc    First-time password change for newly created users
+ * @route   POST /api/auth/first-time-password-change
+ * @access  Authenticated users with firstTimeSetup flag
+ */
+exports.firstTimePasswordChange = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Both current and new passwords are required',
+      code: 'MISSING_PASSWORDS'
+    });
+  }
+
+  // Password strength validation
+  if (newPassword.length < 8) {
+    return res.status(400).json({
+      success: false,
+      message: 'New password must be at least 8 characters long',
+      code: 'WEAK_PASSWORD'
+    });
+  }
+
+  // Check for complexity (uppercase, lowercase, number, special char)
+  const hasUpperCase = /[A-Z]/.test(newPassword);
+  const hasLowerCase = /[a-z]/.test(newPassword);
+  const hasNumber = /[0-9]/.test(newPassword);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword);
+
+  if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecialChar) {
+    return res.status(400).json({
+      success: false,
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+      code: 'WEAK_PASSWORD'
+    });
+  }
+
+  try {
+    const user = await User.findById(req.user._id).select('+password +passwordHistory');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        code: 'USER_NOT_FOUND'
+      });
+    }
+
+    // Verify this is a first-time setup user
+    if (!user.firstTimeSetup) {
+      return res.status(400).json({
+        success: false,
+        message: 'This endpoint is only for first-time password setup. Use the regular password change endpoint.',
+        code: 'NOT_FIRST_TIME_SETUP'
+      });
+    }
+
+    // Verify current (temporary) password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect current password',
+        code: 'INVALID_CURRENT_PASSWORD'
+      });
+    }
+
+    // Check password history (ensure not reusing old passwords)
+    if (user.passwordHistory && user.passwordHistory.length > 0) {
+      for (const oldPassword of user.passwordHistory) {
+        const isOldPassword = await bcrypt.compare(newPassword, oldPassword.hash);
+        if (isOldPassword) {
+          return res.status(400).json({
+            success: false,
+            message: 'Cannot reuse a previous password. Please choose a different password.',
+            code: 'PASSWORD_REUSED'
+          });
+        }
+      }
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+    // Add current password to history before updating
+    if (!user.passwordHistory) {
+      user.passwordHistory = [];
+    }
+    user.passwordHistory.unshift({
+      hash: user.password,
+      changedAt: user.passwordLastChanged || new Date()
+    });
+
+    // Keep only last 5 passwords
+    if (user.passwordHistory.length > 5) {
+      user.passwordHistory = user.passwordHistory.slice(0, 5);
+    }
+
+    // Update user
+    user.password = hashedNewPassword;
+    user.passwordLastChanged = new Date();
+    user.passwordExpiresAt = new Date(Date.now() + (user.passwordExpiryDays || 90) * 24 * 60 * 60 * 1000);
+    user.firstTimeSetup = false; // Mark setup as complete
+    user.accountStatus = 'active'; // Activate account
+
+    // Clear setup token
+    user.setupToken = undefined;
+    user.setupTokenExpires = undefined;
+
+    await user.save();
+
+    // Log security event
+    await logsecurityEvent({
+      userId: user._id,
+      action: 'First Time Password Setup Completed',
+      ip: req.clientIP || req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip,
+      device: req.headers['user-agent'] || 'Unknown',
+      details: {
+        accountActivated: true
+      }
+    });
+
+    // Send confirmation email
+    const userEmail = user.email || user.organizationEmail;
+    const userName = user.firstName || user.organizationName || 'User';
+
+    try {
+      await sendEmail({
+        to: userEmail,
+        subject: 'Account Activated - Kenya DHA',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="UTF-8">
+              <style>
+                  body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+                  .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+                  .content { padding: 20px; background-color: white; }
+                  .button { display: inline-block; padding: 12px 30px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                  .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>✅ Account Activated!</h1>
+                  </div>
+                  <div class="content">
+                      <h2>Hello ${userName},</h2>
+                      <p>Great news! Your password has been successfully set up and your account is now active.</p>
+                      <p>You can now log in to the Kenya Digital Health Agency platform using your email and new password.</p>
+                      <p><strong>Next Steps:</strong></p>
+                      <ul>
+                          <li>Log in with your email and new password</li>
+                          <li>Complete your profile (if needed)</li>
+                          <li>Enable two-factor authentication for extra security</li>
+                          <li>Explore the platform features</li>
+                      </ul>
+                      <center>
+                          <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login" class="button">Log In Now</a>
+                      </center>
+                      <p>If you have any questions or need assistance, please contact support.</p>
+                      <p>Best regards,<br><strong>Kenya Digital Health Agency Team</strong></p>
+                  </div>
+                  <div class="footer">
+                      <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+        `
+      });
+    } catch (emailError) {
+      console.error('Failed to send activation email:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Password setup completed successfully. Your account is now active.',
+      data: {
+        accountStatus: 'active',
+        firstTimeSetup: false
+      }
+    });
+
+  } catch (error) {
+    console.error('First-time password change error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to set up password',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };
@@ -2049,6 +2253,322 @@ exports.getUsersByIds = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc    Create user with temporary password (Admin only)
+ * @route   POST /api/auth/admin/create-user
+ * @access  Admin only (dha_system_administrator)
+ */
+exports.createUserByAdmin = async (req, res) => {
+  try {
+    const {
+      type, // 'individual' or 'organization'
+      email,
+      firstName,
+      lastName,
+      phone,
+      role,
+      organizationName,
+      organizationType,
+      county,
+      subCounty,
+      organizationEmail,
+      organizationPhone,
+      yearOfEstablishment
+    } = req.body;
+
+    // Validate required fields based on type
+    if (!type || !role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Type and role are required',
+        code: 'MISSING_FIELDS'
+      });
+    }
+
+    // Validate type
+    if (!['individual', 'organization'].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Type must be either "individual" or "organization"',
+        code: 'INVALID_TYPE'
+      });
+    }
+
+    // Validate role against allowed roles
+    const allowedRoles = [
+      'vendor_developer',
+      'vendor_technical_lead',
+      'vendor_compliance_officer',
+      'dha_system_administrator',
+      'dha_certification_officer',
+      'testing_lab_staff',
+      'certification_committee_member',
+      'county_health_officer',
+      'public_user'
+    ];
+
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid role. Allowed roles: ${allowedRoles.join(', ')}`,
+        code: 'INVALID_ROLE'
+      });
+    }
+
+    let userEmail;
+    let userData = { type, role, accountStatus: 'pending_setup' };
+
+    if (type === 'individual') {
+      if (!firstName || !lastName || !email || !phone) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required fields for individual: firstName, lastName, email, phone',
+          code: 'MISSING_FIELDS'
+        });
+      }
+
+      // Check if email already exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email already exists',
+          code: 'USER_EXISTS'
+        });
+      }
+
+      // Generate username from email
+      const username = email.split('@')[0] + '_' + Date.now().toString().slice(-4);
+
+      userEmail = email;
+      userData = {
+        ...userData,
+        firstName,
+        lastName,
+        email,
+        phone,
+        username,
+        firstTimeSetup: true
+      };
+    } else if (type === 'organization') {
+      if (!organizationName || !organizationType || !county || !organizationEmail || !organizationPhone) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required fields for organization: organizationName, organizationType, county, organizationEmail, organizationPhone',
+          code: 'MISSING_FIELDS'
+        });
+      }
+
+      // Check if organization email already exists
+      const existingOrg = await User.findOne({
+        $or: [{ organizationEmail }, { organizationName }]
+      });
+      if (existingOrg) {
+        return res.status(409).json({
+          success: false,
+          message: 'Organization email or name already exists',
+          code: 'ORG_EXISTS'
+        });
+      }
+
+      userEmail = organizationEmail;
+      userData = {
+        ...userData,
+        organizationName,
+        organizationType,
+        county,
+        subCounty,
+        organizationEmail,
+        organizationPhone,
+        yearOfEstablishment,
+        firstTimeSetup: true
+      };
+    }
+
+    // Generate temporary password (12 characters, alphanumeric)
+    const tempPassword = crypto.randomBytes(6).toString('hex'); // 12 characters
+    const hashedPassword = await bcrypt.hash(tempPassword, 12);
+
+    // Generate setup token (valid for 24 hours)
+    const setupToken = crypto.randomBytes(32).toString('hex');
+    const setupTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Generate recovery key
+    const { plainKey: recoveryKey, hashedKey: recoveryKeyHash } = generateRecoveryKey();
+
+    // Set random default logo
+    const randomLogo = DEFAULT_LOGOS[Math.floor(Math.random() * DEFAULT_LOGOS.length)];
+
+    // Create user
+    const newUser = new User({
+      ...userData,
+      password: hashedPassword,
+      setupToken,
+      setupTokenExpires,
+      recoveryKeyHash,
+      recoveryKeyGeneratedAt: new Date(),
+      logo: randomLogo,
+      passwordLastChanged: new Date(),
+      passwordExpiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
+      sessions: [],
+      failedLoginAttempts: 0
+    });
+
+    await newUser.save();
+
+    // Log security event
+    await logsecurityEvent({
+      userId: req.user._id, // Admin who created the user
+      action: 'Admin User Creation',
+      ip: req.clientIP || req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip,
+      device: req.headers['user-agent'] || 'Unknown',
+      details: {
+        createdUserId: newUser._id,
+        createdUserEmail: userEmail,
+        createdUserRole: role,
+        createdUserType: type
+      }
+    });
+
+    // Create setup URL
+    const setupUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/setup-password?token=${setupToken}`;
+
+    // Send email with temporary password and setup link
+    const emailSubject = 'Welcome to Kenya Digital Health Agency - Account Created';
+    const emailHtml = createUserWelcomeEmail({
+      name: type === 'individual' ? `${firstName} ${lastName}` : organizationName,
+      email: userEmail,
+      tempPassword,
+      setupUrl,
+      recoveryKey,
+      role: getRoleDisplayName(role)
+    });
+
+    try {
+      await sendEmail({
+        to: userEmail,
+        subject: emailSubject,
+        html: emailHtml
+      });
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully. Login credentials sent to email.',
+      data: {
+        userId: newUser._id,
+        email: userEmail,
+        role,
+        type,
+        accountStatus: 'pending_setup',
+        setupTokenExpires
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin create user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create user',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// Helper function to create user welcome email template
+function createUserWelcomeEmail({ name, email, tempPassword, setupUrl, recoveryKey, role }) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Welcome to Kenya Digital Health Agency</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; }
+            .container { max-width: 600px; margin: 20px auto; padding: 0; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .header h1 { margin: 0; font-size: 24px; }
+            .content { padding: 30px; }
+            .credentials-box { background-color: #f8f9fa; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .credentials-box strong { color: #1e40af; }
+            .button { display: inline-block; padding: 12px 30px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+            .button:hover { background-color: #1e40af; }
+            .warning { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .recovery-key { background-color: #d1ecf1; border-left: 4px solid #17a2b8; padding: 15px; margin: 20px 0; border-radius: 4px; font-family: monospace; word-break: break-all; }
+            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; border-radius: 0 0 8px 8px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🏥 Kenya Digital Health Agency</h1>
+                <p>Welcome to the DHA Certification System</p>
+            </div>
+            <div class="content">
+                <h2>Welcome, ${name}!</h2>
+                <p>Your account has been created by a system administrator. You can now access the Kenya Digital Health Agency platform.</p>
+
+                <div class="credentials-box">
+                    <h3>Your Login Credentials:</h3>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Temporary Password:</strong> <code style="background-color: #fff; padding: 5px 10px; border-radius: 3px; color: #e83e8c; font-size: 16px; font-weight: bold;">${tempPassword}</code></p>
+                    <p><strong>Role:</strong> ${role}</p>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ Important:</strong> This is a temporary password. You must change it on your first login for security reasons.
+                </div>
+
+                <center>
+                    <a href="${setupUrl}" class="button">Set Up Your Password</a>
+                </center>
+
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #6c757d; font-size: 12px;">${setupUrl}</p>
+
+                <div class="recovery-key">
+                    <h3>🔑 Your Recovery Key:</h3>
+                    <p><strong>${recoveryKey}</strong></p>
+                    <p style="font-size: 12px; color: #721c24;">Save this key in a secure place. You'll need it if you forget your password.</p>
+                </div>
+
+                <h3>Next Steps:</h3>
+                <ol>
+                    <li>Click the "Set Up Your Password" button above</li>
+                    <li>Log in with your email and temporary password</li>
+                    <li>Create a strong new password (minimum 8 characters, including uppercase, lowercase, number, and special character)</li>
+                    <li>Save your recovery key securely</li>
+                    <li>Start using the platform</li>
+                </ol>
+
+                <div class="warning">
+                    <strong>Security Tips:</strong>
+                    <ul style="margin: 10px 0 0 0;">
+                        <li>Never share your password with anyone</li>
+                        <li>Use a unique password that you don't use elsewhere</li>
+                        <li>Enable two-factor authentication for enhanced security</li>
+                        <li>Store your recovery key in a safe place</li>
+                    </ul>
+                </div>
+
+                <p>If you have any questions or need assistance, please contact the system administrator.</p>
+
+                <p>Best regards,<br>
+                <strong>Kenya Digital Health Agency Team</strong></p>
+            </div>
+            <div class="footer">
+                <p>This is an automated message from the Kenya Digital Health Agency Certification System.</p>
+                <p>© ${new Date().getFullYear()} Kenya Digital Health Agency. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `;
+}
 
 // Helper function to create board member setup email template
 function createBoardMemberSetupEmail({ name, boardRole, setupToken, recoveryKey, setupUrl }) {
