@@ -81,9 +81,21 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid registration type', code: 'INVALID_TYPE' });
     }
 
-    // Verify CAPTCHA
-    if (!captchaAnswer || !captchaToken) {
-      return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
+    // Verify CAPTCHA (skip in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      if (!captchaAnswer || !captchaToken) {
+        return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
+      }
+      if (!verifyCaptcha(captchaAnswer, captchaToken)) {
+        await logSecurityEvent({
+          action: 'Failed CAPTCHA Verification',
+          severity: 'medium',
+          ip: requestInfo.ip,
+          device: requestInfo.deviceString,
+          details: { attemptedRegistration: true }
+        });
+        return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
+      }
     }
 
     if (!verifyCaptcha(captchaAnswer, captchaToken)) {

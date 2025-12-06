@@ -3,6 +3,7 @@ const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const sendEmail = require('../../utils/sendEmail');
+const logActivity = require('../../utils/activityLogger');
 
 /**
  * Generate a temporary password for new users
@@ -310,6 +311,21 @@ exports.createUser = async (req, res) => {
     console.log(`[USER CREATION] ✅ User created successfully in database: ${newUser._id}`);
     console.log(`[USER CREATION] User details - Email: ${newUser.email}, Role: ${newUser.role}, Type: ${newUser.type}`);
 
+    // Log user creation activity
+    await logActivity({
+      user: adminUserId,
+      action: 'USER_CREATED',
+      description: `Admin created new user: ${email}`,
+      details: {
+        createdUserId: newUser._id,
+        userEmail: email,
+        userRole: role,
+        userType: type,
+      },
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
+
     // Send welcome email with credentials
     console.log(`[USER CREATION] Attempting to send welcome email to ${email}...`);
     const emailSent = await sendWelcomeEmail(
@@ -438,6 +454,21 @@ exports.updateUserStatus = async (req, res) => {
       });
     }
 
+    // Log status update
+    await logActivity({
+      user: req.user?._id,
+      action: 'USER_STATUS_UPDATED',
+      description: `Updated user status to ${status}: ${user.email}`,
+      details: {
+        targetUserId: id,
+        targetUserEmail: user.email,
+        newStatus: status,
+        previousStatus: user.accountStatus,
+      },
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
+
     res.status(200).json({
       success: true,
       message: 'User status updated successfully',
@@ -470,6 +501,20 @@ exports.deleteUser = async (req, res) => {
         message: 'User not found',
       });
     }
+
+    // Log user deletion
+    await logActivity({
+      user: req.user?._id,
+      action: 'USER_DELETED',
+      description: `Deleted user: ${user.email}`,
+      details: {
+        deletedUserId: id,
+        deletedUserEmail: user.email,
+        deletedUserRole: user.role,
+      },
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
 
     res.status(200).json({
       success: true,

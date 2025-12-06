@@ -48,7 +48,7 @@ const { requireRole } = require('../middleware/rbac');
 router.post('/register', validate(registerSchema), register);
 router.post('/login', validate(loginSchema), login);
 router.post('/setup-password', validate(setupPasswordSchema), setupPassword);
-router.get('/logout', logout);
+router.post('/logout', auth, logout);
 
 // Protected routes
 router.get('/me', auth, getProfile);
