@@ -7,14 +7,15 @@ const User = require('../models/User');
  * Google OAuth 2.0 Strategy Configuration
  * Handles authentication via Google Sign-In
  */
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
-      passReqToCallback: true
-    },
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+        passReqToCallback: true
+      },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
         // Extract profile information
@@ -88,7 +89,8 @@ passport.use(
       }
     }
   )
-);
+  );
+}
 
 // Serialize user for session
 passport.serializeUser((user, done) => {
