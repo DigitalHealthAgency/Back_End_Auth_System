@@ -11,9 +11,13 @@ const { logsecurityEvent } = require('../controllers/admin/securityController');
  * Handles user impersonation by admin users and session validation
  */
 const protect = async (req, res, next) => {
-  const token = req.cookies.token;
   const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
-
+  // Check for token in cookies or Authorization header
+  let token = req.cookies.token;
+  
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
   if (!token) {
     return res.status(401).json({ message: 'Not authorized, no token provided' });
   }
@@ -635,7 +639,7 @@ const validateSession = async (req, res, next) => {
       if (session) {
         // Check session timeout (default 30 minutes of inactivity)
         const sessionTimeout = req.systemSettings?.sessionTimeout || 30 * 60 * 1000;
-        const timeSinceLastActivity = Date.now() - session.lastActivity.getTime();
+        const timeSinceLastActivity = Date.now() - new Date(session.lastActivity).getTime();
         
         if (timeSinceLastActivity > sessionTimeout) {
           // Remove expired session
