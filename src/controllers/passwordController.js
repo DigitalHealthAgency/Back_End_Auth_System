@@ -1,3 +1,4 @@
+const ERROR_CODES = require('../constants/errorCodes');
 // src/controllers/passwordController.js
 const PasswordReset = require('../models/PasswordReset');
 const User = require('../models/User');
@@ -186,7 +187,7 @@ exports.resetPassword = async (req, res) => {
       const isOldPassword = await bcrypt.compare(newPassword, oldPassword.hash);
       if (isOldPassword) {
         return res.status(400).json({
-          message: 'New password cannot be the same as any of your last 5 passwords'
+          message: ERROR_CODES.PASSWORD_IN_HISTORY.message, code: ERROR_CODES.PASSWORD_IN_HISTORY.code
         });
       }
     }
@@ -196,7 +197,7 @@ exports.resetPassword = async (req, res) => {
       const isSameAsCurrent = await bcrypt.compare(newPassword, user.password);
       if (isSameAsCurrent) {
         return res.status(400).json({
-          message: 'New password cannot be the same as your current password'
+          message: ERROR_CODES.PASSWORD_IN_HISTORY.message, code: ERROR_CODES.PASSWORD_IN_HISTORY.code
         });
       }
     }
@@ -204,6 +205,7 @@ exports.resetPassword = async (req, res) => {
     // Hash the new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
+
 
     // Update password history
     if (user.password) {
