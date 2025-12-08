@@ -28,13 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Download MongoDB binaries (cache)
-        run: |
-          mkdir -p ~/.cache/mongodb-binaries
-          if [ ! -f ~/.cache/mongodb-binaries/mongod-7.0.14 ]; then
-            npx mongodb-memory-server-preload
-          fi
-
       - name: Create .env file
         run: |
           cat > .env << EOF
