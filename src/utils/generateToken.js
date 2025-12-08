@@ -53,7 +53,8 @@ const generateToken = (userId, twoFactorConfirmed = false, options = {}) => {
     });
   }
 
-  return jwt.sign(payload, process.env.JWT_SECRET, {
+  const secret = process.env.JWT_SECRET || 'fallback_test_secret_key';
+  return jwt.sign(payload, secret, {
     expiresIn,
     issuer: 'Prezio', // Fixed: Made consistent with other functions
     audience: 'prezio-users' // Fixed: Made consistent with other functions

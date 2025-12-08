@@ -415,7 +415,7 @@ exports.login = async (req, res) => {
         console.log('[LOGIN] Password expired for user:', user.email);
         
         // Log security event
-        await SecurityEvent.create({
+        await securityEvent.create({
           userId: user._id,
           action: 'Password Expired Login Attempt',
           details: {

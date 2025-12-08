@@ -54,6 +54,7 @@ router.post('/logout', auth, logout);
 router.get('/me', auth, getProfile);
 router.patch('/me', auth, validate(updateProfileSchema), updateProfile);
 router.patch('/change-password', auth, validate(changePasswordSchema), changePassword);
+router.post('/change-password', auth, validate(changePasswordSchema), changePassword);
 router.post('/first-time-password-change', auth, firstTimePasswordChange);
 
 // Admin-only routes
