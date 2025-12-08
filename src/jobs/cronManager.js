@@ -37,14 +37,7 @@ class CronManager {
       timezone: 'UTC'
     });
 
-    // Account Cleanup Job - runs daily at 2 AM
-    this.registerJob('accountCleanup', {
-      schedule: '0 2 * * *', // Daily at 2 AM UTC
-      job: null, // Will be implemented later if needed
-      description: 'Clean up old audit logs and temporary data',
-      enabled: false, // Disabled for now
-      timezone: 'UTC'
-    });
+    // Account Cleanup Job disabled (not implemented yet)
 
     // Health Check Job - runs every 30 minutes
     this.registerJob('healthCheck', {

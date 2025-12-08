@@ -121,9 +121,7 @@ const teamMemberSchema = new mongoose.Schema({
     default: Date.now
   },
   invitationToken: {
-    type: String,
-    unique: true,
-    sparse: true
+    type: String
   },
   invitationExpiresAt: {
     type: Date

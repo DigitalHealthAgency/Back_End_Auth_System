@@ -15,20 +15,6 @@ jobs:
       matrix:
         node-version: [18.x, 20.x]
 
-    services:
-      mongodb:
-        image: mongo:6.0
-        env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: password
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,11 +28,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Download MongoDB binaries (cache)
+        run: |
+          mkdir -p ~/.cache/mongodb-binaries
+          if [ ! -f ~/.cache/mongodb-binaries/mongod-7.0.14 ]; then
+            npx mongodb-memory-server-preload
+          fi
+
       - name: Create .env file
         run: |
           cat > .env << EOF
           NODE_ENV=test
-          MONGO_URI=mongodb://root:password@localhost:27017/dha-test?authSource=admin
           JWT_SECRET=test_jwt_secret_for_ci_testing
           PORT=5000
           GOOGLE_CLIENT_ID=dummy_client_id
@@ -54,23 +46,10 @@ jobs:
           GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
           EOF
 
-      - name: Run linter
-        run: npm run lint --if-present || echo "No linter configured"
-
-      - name: Run unit tests
-        run: npm run test:unit --if-present || npm test -- tests/unit
-
-      - name: Run integration tests
-        run: npm run test:integration --if-present || npm test -- tests/integration
-
-      - name: Run security tests
-        run: npm run test:security --if-present || npm test -- tests/security
-
-      - name: Run RBAC tests
-        run: npm run test:rbac --if-present || npm test -- tests/rbac
-
-      - name: Run all tests with coverage
-        run: npm test -- --coverage --maxWorkers=2
+      - name: Run tests with coverage
+        run: npm run test:ci
+        env:
+          CI: true
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4

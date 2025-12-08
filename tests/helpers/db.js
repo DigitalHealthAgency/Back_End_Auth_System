@@ -9,10 +9,7 @@ async function connectDB() {
   const uri = process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/huduma-hub-test';
 
   if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+    await mongoose.connect(uri);
   }
 }
 
