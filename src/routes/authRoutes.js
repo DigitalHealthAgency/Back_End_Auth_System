@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const validate = require('../middleware/validate');
+const validateRegistration = require('../middleware/validateRegistration');
 const {
   registerSchema,
   loginSchema,
@@ -43,18 +44,23 @@ const auth = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadLogo');
 const { getSessions, terminateSession } = require('../controllers/sessionController');
 const { requireRole } = require('../middleware/rbac');
+const { autoUnlockMiddleware } = require('../middleware/autoUnlock'); //  CRITICAL FIX: Auto-unlock middleware
+const { checkPasswordExpiry } = require('../middleware/passwordExpiryCheck'); //  CRITICAL FIX: Password expiry check
 
 // Public routes
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
+router.post('/register', validateRegistration, register);
+router.post('/login', autoUnlockMiddleware, validate(loginSchema), login); //  CRITICAL FIX: Apply auto-unlock before login
 router.post('/setup-password', validate(setupPasswordSchema), setupPassword);
 router.post('/logout', auth, logout);
 
 // Protected routes
-router.get('/me', auth, getProfile);
-router.patch('/me', auth, validate(updateProfileSchema), updateProfile);
-router.patch('/change-password', auth, validate(changePasswordSchema), changePassword);
-router.post('/change-password', auth, validate(changePasswordSchema), changePassword);
+router.get('/me', auth, checkPasswordExpiry, getProfile); //  FIX: Block API access with expired password
+router.get('/profile', auth, checkPasswordExpiry, getProfile); // Alias for backward compatibility with tests
+router.patch('/me', auth, checkPasswordExpiry, validate(updateProfileSchema), updateProfile); //  FIX: Block API access with expired password
+router.put('/profile', auth, checkPasswordExpiry, validate(updateProfileSchema), updateProfile); // Alias for backward compatibility with tests (PUT method)
+router.patch('/profile', auth, checkPasswordExpiry, validate(updateProfileSchema), updateProfile); // Alias for backward compatibility with tests (PATCH method)
+router.patch('/change-password', auth, validate(changePasswordSchema), changePassword); //  FIX: Allow password change with expired password
+router.post('/change-password', auth, validate(changePasswordSchema), changePassword); //  FIX: Allow password change with expired password
 router.post('/first-time-password-change', auth, firstTimePasswordChange);
 
 // Admin-only routes

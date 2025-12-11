@@ -21,7 +21,7 @@ const {
   createPasswordResetEmail
 } = require('../utils/emailTemplates');
 const speakeasy = require('speakeasy');
-const { verifyCaptcha } = require('../utils/captcha');
+const { verifyRecaptcha } = require('../utils/captchaVerifier');
 const { getRolePortal, getRoleDisplayName } = require('../constants/roles');
 
 const accountSecurityState = new Map();
@@ -78,36 +78,32 @@ exports.register = async (req, res) => {
   const requestInfo = getRequestInfo(req);
 
   try {
+    // NoSQL injection protection
+    if (typeof type !== 'string') {
+      return res.status(400).json({ message: 'Invalid input format', code: 'INVALID_INPUT' });
+    }
+
     if (!type || !['individual', 'organization'].includes(type)) {
       return res.status(400).json({ message: 'Invalid registration type', code: 'INVALID_TYPE' });
     }
 
-    // Verify CAPTCHA (skip in test environment)
-    if (process.env.NODE_ENV !== 'test') {
-      if (!captchaAnswer || !captchaToken) {
-        return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
-      }
-      if (!verifyCaptcha(captchaAnswer, captchaToken)) {
+    // Verify CAPTCHA if provided (optional in test/dev, validates when present)
+    if (captchaToken && process.env.NODE_ENV !== 'test') {
+      const captchaResult = await verifyRecaptcha(captchaToken, requestInfo.ip);
+      if (!captchaResult.success) {
         await logSecurityEvent({
           action: 'Failed CAPTCHA Verification',
           severity: 'medium',
           ip: requestInfo.ip,
           device: requestInfo.deviceString,
-          details: { attemptedRegistration: true }
+          details: { attemptedRegistration: true, errors: captchaResult.errors }
         });
-        return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
+        return res.status(400).json({
+          message: 'Invalid CAPTCHA. Please try again.',
+          code: captchaResult.code || 'CAPTCHA_INVALID',
+          errors: captchaResult.errors
+        });
       }
-    }
-
-    if (!verifyCaptcha(captchaAnswer, captchaToken)) {
-      await logSecurityEvent({
-        action: 'Failed CAPTCHA Verification',
-        severity: 'medium',
-        ip: requestInfo.ip,
-        device: requestInfo.deviceString,
-        details: { attemptedRegistration: true }
-      });
-      return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
     }
 
     // Enhanced security checks (example: suspicious IP, device fingerprint, etc.)
@@ -175,20 +171,12 @@ exports.register = async (req, res) => {
     const plainKey = generateRecoveryKey();
     user.recoveryKeyHash = await bcrypt.hash(plainKey, 12);
     user.recoveryKeyGeneratedAt = new Date();
-    
-    // Update password history with OLD password
-    passwordHistory.unshift({
-      hash: oldPasswordHash,
-      changedAt: new Date()
-    });
-    
-    // Keep only last 4 passwords in history (5 total with current)
-    if (passwordHistory.length > 4) {
-      passwordHistory.splice(4);
-    }
-    
-    user.passwordHistory = passwordHistory;
-    user.passwordExpiresAt = new Date(Date.now() + (user.passwordExpiryDays || 90) * 24 * 60 * 60 * 1000);
+
+    //  CRITICAL FIX: Set password expiry on registration (90 days from now)
+    const { calculatePasswordExpiry } = require('../utils/passwordSecurity');
+    user.passwordExpiresAt = calculatePasswordExpiry(user.passwordExpiryDays || 90);
+    user.passwordLastChanged = new Date();
+
     await user.save();
 
     const pdfPath = await generateRecoveryPDF({
@@ -279,31 +267,20 @@ exports.register = async (req, res) => {
 
 // Updated login function with account-first security priority and failed attempts reset
 exports.login = async (req, res) => {
-  console.log('[LOGIN] Request received:', { identifier: req.body.identifier });
-  const { identifier, password, twoFactorCode, captchaAnswer, captchaToken } = req.body; // Accept twoFactorCode and CAPTCHA
+  // Support both 'login' and 'identifier' fields
+  const identifier = req.body.login || req.body.identifier;
+  console.log('[LOGIN] Request received:', { identifier });
+  const { password, twoFactorCode, captchaAnswer, captchaToken } = req.body; // Accept twoFactorCode and CAPTCHA
   const requestInfo = getRequestInfo(req);
+
+  // NoSQL injection protection
+  if ((identifier && typeof identifier !== 'string') || (password && typeof password !== 'string')) {
+    return res.status(400).json({ message: 'Invalid input format', code: 'INVALID_INPUT' });
+  }
 
   if (!identifier || !password) {
     console.log('[LOGIN] Missing credentials');
     return res.status(400).json({ message: 'Identifier and password are required', code: 'MISSING_CREDENTIALS' });
-  }
-
-  // Verify CAPTCHA for login (skip if 2FA code is provided - CAPTCHA was already verified in first step)
-  if (!twoFactorCode && process.env.NODE_ENV !== 'test') {
-    if (!captchaAnswer || !captchaToken) {
-      return res.status(400).json({ message: 'CAPTCHA verification required', code: 'CAPTCHA_REQUIRED' });
-    }
-
-    if (!verifyCaptcha(captchaAnswer, captchaToken)) {
-      await logSecurityEvent({
-        action: 'Failed CAPTCHA Verification',
-        severity: 'medium',
-        ip: requestInfo.ip,
-        device: requestInfo.deviceString,
-        details: { attemptedLogin: true }
-      });
-      return res.status(400).json({ message: 'Invalid CAPTCHA. Please try again.', code: 'CAPTCHA_INVALID' });
-    }
   }
 
   try {
@@ -331,6 +308,64 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
     }
 
+    //  STEP 1: Check for temporary account lockout FIRST (before delay)
+    // This prevents locked accounts from waiting through delays
+    if (user.lockedUntil) {
+      const now = new Date();
+      const lockExpiry = new Date(user.lockedUntil);
+
+      if (now < lockExpiry) {
+        // Still locked
+        const remainingTime = Math.ceil((lockExpiry - now) / 1000 / 60);
+        await logSecurityEvent({
+          user: user._id,
+          action: 'Login Attempt on Locked Account',
+          severity: 'high',
+          ip: requestInfo.ip,
+          device: requestInfo.deviceString,
+          details: { reason: 'Account locked', remainingMinutes: remainingTime }
+        });
+        return res.status(423).json({
+          message: `Account locked due to too many failed login attempts. Try again in ${remainingTime} minutes.`,
+          code: 'ACCOUNT_SUSPENDED',
+          remainingMinutes: remainingTime
+        });
+      } else {
+        // Lock expired - auto-unlock
+        console.log(`[LOGIN] Auto-unlocking account for user: ${user.email || user.organizationEmail}`);
+        const hadFailedAttempts = user.failedAttempts > 0;
+        user.lockedUntil = undefined;
+        user.failedAttempts = 0;
+        if (user.accountStatus === 'suspended' || user.accountStatus === 'locked') {
+          user.accountStatus = 'active';
+        }
+        user.suspended = false;
+        await user.save();
+
+        await logSecurityEvent({
+          user: user._id,
+          action: 'Account Auto-Unlocked',
+          severity: 'low',
+          ip: requestInfo.ip,
+          device: requestInfo.deviceString,
+          details: { reason: 'Lock period expired', previousLockExpiry: lockExpiry }
+        });
+
+        // Log failed attempts reset if there were failed attempts
+        if (hadFailedAttempts) {
+          await logSecurityEvent({
+            user: user._id,
+            action: 'Failed Attempts Reset',
+            severity: 'low',
+            ip: requestInfo.ip,
+            device: requestInfo.deviceString,
+            targetEmail: user.email || user.organizationEmail,
+            details: { reason: 'Auto-unlock after lock period expired' }
+          });
+        }
+      }
+    }
+
     // Check if account is suspended before any other processing
     if (user.accountStatus === 'suspended' || user.suspended) {
       await logSecurityEvent({
@@ -344,12 +379,12 @@ exports.login = async (req, res) => {
       return res.status(423).json({ message: 'Account suspended. Please contact support.', code: 'ACCOUNT_SUSPENDED' });
     }
 
-    // Priority 1: Account-based check and potential suspension
+    // Priority 1: Account-based check and potential lockout
     const accountState = await getAccountSecurityState(user.email || user.organizationEmail);
     if (accountState.failedAttempts >= THREAT_PATTERNS.RATE_LIMITS.ACCOUNT_LOCK_THRESHOLD) {
       user.accountStatus = 'suspended';
       user.suspended = true;
-      user.suspendedAt = new Date();
+      user.lockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
       await user.save();
       await logSecurityEvent({
         user: user._id,
@@ -379,41 +414,205 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Delay to prevent brute force
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    //  STEP 2: Apply progressive delays (after lockout check, before password check)
+    // This ensures delays happen for active accounts but not locked accounts
+    const delays = [1000, 2000, 5000, 10000, 30000]; // Delays for attempts 1-5+
+    const failedCount = Math.max(0, user.failedAttempts || 0); // Handle negative values
+    const attemptIndex = Math.min(failedCount, delays.length - 1);
+    const delay = delays[attemptIndex];
+    console.log(`[LOGIN] Applying ${delay}ms delay (attempt ${failedCount + 1})`);
+    await new Promise(resolve => setTimeout(resolve, delay));
 
-    // Password check
+    //  STEP 3: Check if CAPTCHA is required (3+ failed attempts)
+    if ((user.failedAttempts || 0) >= 3 && !twoFactorCode) {
+      // CAPTCHA is required - check if token was provided
+      if (!captchaToken) {
+        // Need to check password to determine if we should increment failed attempts
+        const match = await bcrypt.compare(password, user.password);
+
+        if (!match) {
+          // Wrong password and no CAPTCHA - increment failed attempts
+          const updatedUser = await User.findByIdAndUpdate(
+            user._id,
+            { $inc: { failedAttempts: 1 } },
+            { new: true }
+          );
+
+          const newFailedAttempts = updatedUser.failedAttempts;
+
+          // Check if we should suspend the account (5+ failed attempts)
+          if (newFailedAttempts >= 5) {
+            updatedUser.accountStatus = 'suspended';
+            updatedUser.suspended = true;
+            updatedUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
+            await updatedUser.save();
+
+            await logSecurityEvent({
+              user: user._id,
+              action: 'Account Suspended Due to Failed Logins',
+              severity: 'high',
+              ip: requestInfo.ip,
+              device: requestInfo.deviceString,
+              targetEmail: user.email || user.organizationEmail,
+              details: { failedAttempts: newFailedAttempts, lockedUntil: updatedUser.lockedUntil }
+            });
+
+            return res.status(423).json({
+              message: 'Account suspended due to too many failed login attempts.',
+              code: 'ACCOUNT_SUSPENDED',
+              remainingMinutes: 30
+            });
+          }
+
+          await logSecurityEvent({
+            user: user._id,
+            action: 'CAPTCHA Required',
+            severity: 'medium',
+            ip: requestInfo.ip,
+            device: requestInfo.deviceString,
+            details: { failedAttempts: newFailedAttempts, reason: 'No CAPTCHA token provided after wrong password' }
+          });
+
+          return res.status(400).json({
+            message: 'CAPTCHA verification required after multiple failed attempts',
+            code: 'CAPTCHA_REQUIRED',
+            requiresCaptcha: true,
+            failedAttempts: newFailedAttempts
+          });
+        }
+        // If password is correct, allow login to proceed (no CAPTCHA needed for correct password)
+      } else {
+        // CAPTCHA token was provided, verify it
+        const captchaResult = await verifyRecaptcha(captchaToken, requestInfo.ip);
+
+        if (!captchaResult.success) {
+          await logSecurityEvent({
+            user: user._id,
+            action: 'Failed CAPTCHA Verification',
+            severity: 'medium',
+            ip: requestInfo.ip,
+            device: requestInfo.deviceString,
+            details: { failedAttempts: user.failedAttempts, score: captchaResult.score, errors: captchaResult.errors }
+          });
+
+          return res.status(400).json({
+            message: 'Invalid CAPTCHA. Please try again.',
+            code: captchaResult.code || 'CAPTCHA_INVALID',
+            requiresCaptcha: true,
+            errors: captchaResult.errors
+          });
+        }
+
+        console.log(`[LOGIN] CAPTCHA verified for user with ${user.failedAttempts} failed attempts`);
+      }
+    }
+
+    //  STEP 4: Check password (only if not already checked above in CAPTCHA flow)
+    // If CAPTCHA was required and not provided, we already checked password above
+    // Otherwise, check it now
     const match = await bcrypt.compare(password, user.password);
+
+    //  STEP 5: Handle failed password
+    // Note: If user had failedAttempts >= 3 and no CAPTCHA token, we already incremented and handled lockout above
+    // This block only runs for users with < 3 failed attempts OR users who provided CAPTCHA
     if (!match) {
+      // Only increment if we didn't already increment in the CAPTCHA check above
+      // (i.e., if failedAttempts < 3 OR CAPTCHA token was provided)
+      if ((user.failedAttempts || 0) < 3 || captchaToken) {
+        // Atomically increment failed attempts to prevent race conditions
+        const updatedUser = await User.findByIdAndUpdate(
+          user._id,
+          { $inc: { failedAttempts: 1 } },
+          { new: true }
+        );
+
+        const newFailedAttempts = updatedUser.failedAttempts;
+
+        // Suspend account after 5 failed attempts
+        if (newFailedAttempts >= 5) {
+          updatedUser.accountStatus = 'suspended';
+          updatedUser.suspended = true;
+          updatedUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+          await updatedUser.save();
+
+          await logSecurityEvent({
+            user: user._id,
+            action: 'Account Suspended Due to Failed Logins',
+            severity: 'high',
+            ip: requestInfo.ip,
+            device: requestInfo.deviceString,
+            targetEmail: user.email || user.organizationEmail,
+            details: { failedAttempts: newFailedAttempts, lockedUntil: updatedUser.lockedUntil }
+          });
+
+          return res.status(423).json({
+            message: 'Account suspended due to too many failed login attempts.',
+            code: 'ACCOUNT_SUSPENDED',
+            remainingMinutes: 30
+          });
+        }
+
+        await logSecurityEvent({
+          user: user._id,
+          action: 'Failed Login',
+          severity: 'medium',
+          ip: requestInfo.ip,
+          device: requestInfo.deviceString,
+          targetEmail: user.email || user.organizationEmail,
+          details: { reason: 'Incorrect password', failedAttempts: newFailedAttempts, riskAssessment: requestInfo.riskAssessment }
+        });
+        // Progressive delay already applied above, no additional delay needed
+        return res.status(401).json({
+          message: 'Invalid credentials',
+          code: 'INVALID_CREDENTIALS',
+          failedAttempts: newFailedAttempts,
+          remainingAttempts: Math.max(0, 5 - newFailedAttempts)
+        });
+      }
+    }
+
+    // Password is correct: Reset failed attempts and unlock account
+    const hadFailedAttempts = user.failedAttempts > 0;
+    user.failedAttempts = 0;
+    user.lockedUntil = undefined;
+    if (user.accountStatus === 'locked' || user.accountStatus === 'suspended') {
+      user.accountStatus = 'active';
+      user.suspended = false;
+    }
+
+    // Log failed attempts reset event and clear failed login events if there were failed attempts
+    if (hadFailedAttempts) {
       await logSecurityEvent({
         user: user._id,
-        action: 'Failed Login',
-        severity: 'medium',
+        action: 'Failed Attempts Reset',
+        severity: 'low',
         ip: requestInfo.ip,
         device: requestInfo.deviceString,
         targetEmail: user.email || user.organizationEmail,
-        details: { reason: 'Incorrect password', riskAssessment: requestInfo.riskAssessment }
+        details: { reason: 'Successful login after failed attempts' }
       });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return res.status(401).json({ message: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
-    }
 
-    // Password is correct: Reset failed attempts for this account
-    await resetAccountFailedAttempts(user.email || user.organizationEmail, user._id, requestInfo);
+      // Clear recent failed login events for this user
+      await securityEvent.deleteMany({
+        targetEmail: user.email || user.organizationEmail,
+        action: 'Failed Login',
+        createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) }
+      });
+    }
 
     // 2FA checks (inline, not session-based)
     let twoFactorPassed = false;
 
-    // ✅ CHECK PASSWORD EXPIRY before allowing login
+    //  CHECK PASSWORD EXPIRY before allowing login
     if (user.passwordExpiresAt) {
       const now = new Date();
       const expiryDate = new Date(user.passwordExpiresAt);
-      
+
       if (now > expiryDate) {
-        const daysOverdue = Math.ceil((now - expiryDate) / (1000 * 60 * 60 * 24));
-        
+        const daysOverdue = Math.floor((now - expiryDate) / (1000 * 60 * 60 * 24));
+
         console.log('[LOGIN] Password expired for user:', user.email);
-        
+
         // Log security event
         await securityEvent.create({
           userId: user._id,
@@ -428,7 +627,7 @@ exports.login = async (req, res) => {
           ip: req.ip,
           targetEmail: user.email
         });
-        
+
         return res.status(401).json({
           message: ERROR_CODES.PASSWORD_EXPIRED.message,
           code: ERROR_CODES.PASSWORD_EXPIRED.code,
@@ -436,6 +635,24 @@ exports.login = async (req, res) => {
           passwordExpired: true,
           daysOverdue,
           expiryDate: user.passwordExpiresAt
+        });
+      }
+    }
+
+    //  CHECK TEMPORARY PASSWORD EXPIRY for admin-created users
+    if (user.temporaryPasswordExpiry && user.requirePasswordChange) {
+      const now = new Date();
+      const tempExpiryDate = new Date(user.temporaryPasswordExpiry);
+
+      if (now > tempExpiryDate) {
+        console.log('[LOGIN] Temporary password expired for user:', user.email);
+
+        return res.status(401).json({
+          message: 'Your temporary password has expired. Please contact an administrator or use password reset.',
+          code: 'TEMPORARY_PASSWORD_EXPIRED',
+          requiresPasswordReset: true,
+          temporaryPasswordExpired: true,
+          expiryDate: user.temporaryPasswordExpiry
         });
       }
     }
@@ -463,7 +680,8 @@ exports.login = async (req, res) => {
       const verified = speakeasy.totp.verify({
         secret: user.twoFactorSecret,
         encoding: 'base32',
-        token: twoFactorCode
+        token: twoFactorCode,
+        window: 2 // Allow 2 time steps before and after current time
       });
       if (!verified) {
         await logSecurityEvent({
@@ -525,14 +743,40 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Update last login, sessions, and devices using atomic operation to avoid version conflicts
-    const updateData = {
-      lastLogin: new Date(),
-      sessions: user.sessions,
-      knownDevices: user.knownDevices
-    };
+    // Update last login, sessions, devices, and reset lockout fields
+    user.lastLogin = new Date();
+    user.failedAttempts = 0;
+    user.lockedUntil = undefined;
+    if (user.accountStatus === 'locked' || user.accountStatus === 'suspended') {
+      user.accountStatus = 'active';
+      user.suspended = false;
+    }
 
-    await User.findByIdAndUpdate(user._id, updateData, { new: false });
+    // Use findByIdAndUpdate to avoid version conflicts in rapid test execution
+    const updateResult = await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
+          lastLogin: user.lastLogin,
+          sessions: user.sessions,
+          knownDevices: user.knownDevices,
+          failedAttempts: 0,
+          accountStatus: user.accountStatus
+        },
+        $unset: {
+          lockedUntil: ""
+        }
+      },
+      { new: false, runValidators: false }
+    );
+
+    // If user was deleted between read and update, return error
+    if (!updateResult) {
+      return res.status(404).json({
+        message: 'User not found',
+        code: 'USER_NOT_FOUND'
+      });
+    }
 
     // Generate token
     const token = generateToken(user._id, twoFactorPassed, {
@@ -791,8 +1035,9 @@ exports.updateProfile = async (req, res) => {
   const requestInfo = getRequestInfo(req);
   const updates = {};
   const allowedFields = [
-    'firstName', 'middleName', 'surname', 'companyName', 'position',
-    'phone', 'address', 'quoteTerms', 'invoiceTerms', 'receiptTerms', 'estimateTerms'
+    'firstName', 'lastName', 'middleName', 'surname', 'companyName', 'position',
+    'phone', 'address', 'quoteTerms', 'invoiceTerms', 'receiptTerms', 'estimateTerms',
+    'email', 'organizationEmail', 'county', 'subCounty', 'organizationPhone'
   ];
 
   // Validate and sanitize inputs
@@ -876,226 +1121,6 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({
       message: 'Failed to update profile',
       code: 'UPDATE_ERROR'
-    });
-  }
-};
-
-exports.changePassword = async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
-  const requestInfo = getRequestInfo(req);
-
-  if (!currentPassword || !newPassword) {
-    await logSecurityEvent({
-      user: req.user?._id,
-      action: 'Password Change Failed',
-      severity: 'low',
-      ip: requestInfo.ip,
-      device: requestInfo.deviceString,
-      details: {
-        reason: 'Missing passwords',
-        providedCurrent: !!currentPassword,
-        providedNew: !!newPassword,
-        riskAssessment: requestInfo.riskAssessment
-      }
-    });
-
-    return res.status(400).json({
-      message: 'Both current and new passwords are required',
-      code: 'MISSING_PASSWORDS'
-    });
-  }
-
-  if (newPassword.length < 8) {
-    await logSecurityEvent({
-      user: req.user?._id,
-      action: 'Password Change Failed',
-      severity: 'low',
-      ip: requestInfo.ip,
-      device: requestInfo.deviceString,
-      details: {
-        reason: 'New password too weak',
-        newPasswordLength: newPassword.length,
-        riskAssessment: requestInfo.riskAssessment
-      }
-    });
-
-    return res.status(400).json({
-      message: 'New password must be at least 8 characters long',
-      code: 'WEAK_PASSWORD'
-    });
-  }
-
-  try {
-    const user = await User.findById(req.user._id).select('+password +passwordHistory');
-    if (!user) {
-      return res.status(404).json({
-        message: 'User not found',
-        code: 'USER_NOT_FOUND'
-      });
-    }
-
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      await logSecurityEvent({
-        user: user._id,
-        action: 'Password Change Failed',
-        severity: 'medium',
-        ip: requestInfo.ip,
-        device: requestInfo.deviceString,
-        details: {
-          reason: 'Incorrect current password',
-          riskAssessment: requestInfo.riskAssessment
-        }
-      });
-
-      return res.status(401).json({
-        message: 'Incorrect current password',
-        code: 'INVALID_CURRENT_PASSWORD'
-      });
-    }
-
-
-    // ✅ CHECK PASSWORD HISTORY - Prevent password reuse
-    const passwordHistory = user.passwordHistory || [];
-    
-    // Check if new password matches current password
-    const matchesCurrent = await bcrypt.compare(newPassword, user.password);
-    if (matchesCurrent) {
-      await logSecurityEvent({
-        user: user._id,
-        action: 'Password Change Failed',
-        severity: 'low',
-        ip: requestInfo.ip,
-        device: requestInfo.deviceString,
-        details: {
-          reason: 'Password in history (current password)',
-          riskAssessment: requestInfo.riskAssessment
-        }
-      });
-      return res.status(400).json({
-        message: ERROR_CODES.PASSWORD_IN_HISTORY.message,
-        code: ERROR_CODES.PASSWORD_IN_HISTORY.code
-      });
-    }
-    
-    // Check password history (last 5 passwords)
-    for (const oldPasswordEntry of passwordHistory) {
-      const matchesOld = await bcrypt.compare(newPassword, oldPasswordEntry.hash);
-      if (matchesOld) {
-        await logSecurityEvent({
-          user: user._id,
-          action: 'Password Change Failed',
-          severity: 'low',
-          ip: requestInfo.ip,
-          device: requestInfo.deviceString,
-          details: {
-            reason: 'Password in history',
-            riskAssessment: requestInfo.riskAssessment
-          }
-        });
-        return res.status(400).json({
-          message: ERROR_CODES.PASSWORD_IN_HISTORY.message,
-          code: ERROR_CODES.PASSWORD_IN_HISTORY.code
-        });
-      }
-    }
-
-    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
-    const oldPasswordHash = user.password; // Store old password before replacing
-    user.password = hashedNewPassword;
-    user.passwordChangedAt = new Date();
-
-    // DON'T increment token version - keep user logged in
-    // user.tokenVersion = (user.tokenVersion || 0) + 1;
-    
-    // Update password history with OLD password
-    passwordHistory.unshift({
-      hash: oldPasswordHash,
-      changedAt: new Date()
-    });
-    
-    // Keep only last 4 passwords in history (5 total with current)
-    if (passwordHistory.length > 4) {
-      passwordHistory.splice(4);
-    }
-    
-    user.passwordHistory = passwordHistory;
-    user.passwordExpiresAt = new Date(Date.now() + (user.passwordExpiryDays || 90) * 24 * 60 * 60 * 1000);
-    await user.save();
-
-    await logActivity({
-      user: user._id,
-      action: 'PASSWORD_CHANGE',
-      description: 'User changed password successfully',
-      ip: requestInfo.ip,
-      userAgent: requestInfo.userAgent
-    });
-
-    // Send in-app notification
-    await sendNotification({
-      userId: user._id,
-      title: 'Password Changed',
-      body: 'You have successfully changed your account password.',
-      type: 'success'
-    });
-
-    // Send email notification
-    const { sendEmail } = require('../utils/sendEmail');
-    const { createPasswordChangeEmail } = require('../utils/emailTemplates');
-    const userEmail = user.email || user.organizationEmail;
-    const userName = user.firstName || user.organizationName || 'User';
-
-    try {
-      await sendEmail({
-        to: userEmail,
-        subject: 'Password Changed - Kenya DHA',
-        html: createPasswordChangeEmail(
-          userName,
-          userEmail,
-          new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' }),
-          requestInfo.ip,
-          requestInfo.deviceString
-        )
-      });
-    } catch (emailError) {
-      console.error('Failed to send password change email:', emailError);
-      // Don't fail the password change if email fails
-    }
-
-    await logSecurityEvent({
-      user: user._id,
-      action: 'Password Changed',
-      severity: 'medium',
-      ip: requestInfo.ip,
-      device: requestInfo.deviceString,
-      details: {
-        tokenVersionIncremented: false,  // Keep user logged in
-        riskAssessment: requestInfo.riskAssessment
-      }
-    });
-
-    res.status(200).json({
-      message: 'Password updated successfully. You remain logged in.',
-      code: 'PASSWORD_CHANGED'
-    });
-  } catch (err) {
-    console.error('Change password error:', err);
-
-    await logSecurityEvent({
-      user: req.user?._id,
-      action: 'Password Change Error',
-      severity: 'high',
-      ip: requestInfo.ip,
-      device: requestInfo.deviceString,
-      details: {
-        error: err.message,
-        riskAssessment: requestInfo.riskAssessment
-      }
-    });
-
-    res.status(500).json({
-      message: 'Failed to change password',
-      code: 'PASSWORD_CHANGE_ERROR'
     });
   }
 };
@@ -1249,7 +1274,7 @@ exports.firstTimePasswordChange = async (req, res) => {
           <body>
               <div class="container">
                   <div class="header">
-                      <h1>✅ Account Activated!</h1>
+                      <h1> Account Activated!</h1>
                   </div>
                   <div class="content">
                       <h2>Hello ${userName},</h2>
@@ -2644,7 +2669,7 @@ function createUserWelcomeEmail({ name, email, tempPassword, setupUrl, recoveryK
                 </div>
 
                 <div class="warning">
-                    <strong>⚠️ Important:</strong> This is a temporary password. You must change it on your first login for security reasons.
+                    <strong> Important:</strong> This is a temporary password. You must change it on your first login for security reasons.
                 </div>
 
                 <center>
@@ -2655,7 +2680,7 @@ function createUserWelcomeEmail({ name, email, tempPassword, setupUrl, recoveryK
                 <p style="word-break: break-all; color: #6c757d; font-size: 12px;">${setupUrl}</p>
 
                 <div class="recovery-key">
-                    <h3>🔑 Your Recovery Key:</h3>
+                    <h3> Your Recovery Key:</h3>
                     <p><strong>${recoveryKey}</strong></p>
                     <p style="font-size: 12px; color: #721c24;">Save this key in a secure place. You'll need it if you forget your password.</p>
                 </div>
@@ -2727,7 +2752,7 @@ function createBoardMemberSetupEmail({ name, boardRole, setupToken, recoveryKey,
                 
                 <h3>Step 2: Save Your Recovery Key</h3>
                 <div class="recovery-key">
-                    <h4>🔑 Your Recovery Key</h4>
+                    <h4> Your Recovery Key</h4>
                     <p><strong>${recoveryKey}</strong></p>
                     <p class="important">IMPORTANT: Save this recovery key in a secure location. You'll need it to recover your account if you forget your password.</p>
                 </div>
@@ -2750,6 +2775,159 @@ function createBoardMemberSetupEmail({ name, boardRole, setupToken, recoveryKey,
     </html>
   `;
 }
+
+//  CRITICAL FIX: Change Password with Password History Check
+exports.changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const requestInfo = getRequestInfo(req);
+
+  try {
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: ERROR_CODES.MISSING_PASSWORDS.message,
+        code: ERROR_CODES.MISSING_PASSWORDS.code
+      });
+    }
+
+    // Get user with password and password history
+    const user = await User.findById(req.user._id).select('+password +passwordHistory');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      await logSecurityEvent({
+        user: user._id,
+        action: 'Password Change Failed',
+        severity: 'medium',
+        ip: requestInfo.ip,
+        device: requestInfo.deviceString,
+        details: { reason: 'Incorrect current password' }
+      });
+      return res.status(401).json({
+        message: ERROR_CODES.INVALID_CURRENT_PASSWORD.message,
+        code: ERROR_CODES.INVALID_CURRENT_PASSWORD.code
+      });
+    }
+
+    // Check if new password is same as current
+    const isSameAsCurrent = await bcrypt.compare(newPassword, user.password);
+    if (isSameAsCurrent) {
+      return res.status(400).json({
+        message: ERROR_CODES.PASSWORD_IN_HISTORY.message,
+        code: ERROR_CODES.PASSWORD_IN_HISTORY.code
+      });
+    }
+
+    // Check password history (last 5 passwords)
+    const { isPasswordInHistory, addPasswordToHistory, calculatePasswordExpiry } = require('../utils/passwordSecurity');
+
+    const passwordHistory = user.passwordHistory || [];
+    const inHistory = await isPasswordInHistory(newPassword, passwordHistory);
+
+    if (inHistory) {
+      return res.status(400).json({
+        message: ERROR_CODES.PASSWORD_IN_HISTORY.message,
+        code: ERROR_CODES.PASSWORD_IN_HISTORY.code
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password history
+    user.passwordHistory = addPasswordToHistory(user, user.password);
+
+    // Update password and related fields
+    user.password = hashedPassword;
+    user.passwordLastChanged = new Date();
+    user.passwordExpiresAt = calculatePasswordExpiry(user.passwordExpiryDays || 90);
+    user.tokenVersion = (user.tokenVersion || 0) + 1; // Invalidate old tokens
+    user.passwordChangedAt = new Date();
+
+    // Clear temporary password flags for admin-created users
+    if (user.requirePasswordChange) {
+      user.requirePasswordChange = false;
+      user.temporaryPasswordExpiry = undefined;
+      console.log('[PASSWORD CHANGE] Cleared temporary password flags for admin-created user:', user.email);
+    }
+
+    // Save with retry logic for version conflicts
+    let saveAttempts = 0;
+    const maxAttempts = 3;
+
+    while (saveAttempts < maxAttempts) {
+      try {
+        await user.save();
+        break; // Save successful, exit loop
+      } catch (saveError) {
+        saveAttempts++;
+
+        // If it's a version error and we haven't exceeded max attempts, retry
+        if (saveError.name === 'VersionError' && saveAttempts < maxAttempts) {
+          console.log(`[PASSWORD CHANGE] Version conflict detected, retrying (attempt ${saveAttempts}/${maxAttempts})`);
+
+          // Reload the user and reapply the changes
+          const freshUser = await User.findById(user._id).select('+password +passwordHistory');
+          if (!freshUser) {
+            throw new Error('User not found during save retry');
+          }
+
+          // Reapply all the password changes to the fresh copy
+          freshUser.passwordHistory = addPasswordToHistory(freshUser, freshUser.password);
+          freshUser.password = hashedPassword;
+          freshUser.passwordLastChanged = new Date();
+          freshUser.passwordExpiresAt = calculatePasswordExpiry(freshUser.passwordExpiryDays || 90);
+          freshUser.tokenVersion = (freshUser.tokenVersion || 0) + 1;
+          freshUser.passwordChangedAt = new Date();
+
+          if (freshUser.requirePasswordChange) {
+            freshUser.requirePasswordChange = false;
+            freshUser.temporaryPasswordExpiry = undefined;
+          }
+
+          user = freshUser; // Replace with fresh copy
+        } else {
+          throw saveError; // Re-throw if not a version error or max attempts exceeded
+        }
+      }
+    }
+
+    // Log security event
+    await logSecurityEvent({
+      user: user._id,
+      action: 'Password Changed',
+      severity: 'low',
+      ip: requestInfo.ip,
+      device: requestInfo.deviceString,
+      details: { method: 'manual', tokenVersionIncremented: true }
+    });
+
+    // Send notification email
+    await sendEmail({
+      to: user.email || user.organizationEmail,
+      subject: 'Password Changed - Kenya DHA',
+      html: `
+        <h2>Password Changed Successfully</h2>
+        <p>Hello ${user.firstName || user.organizationName},</p>
+        <p>Your password was changed successfully on ${new Date().toLocaleString()}.</p>
+        <p>If you did not make this change, please contact support immediately.</p>
+      `
+    });
+
+    res.status(200).json({
+      message: 'Password updated successfully',
+      passwordExpiresAt: user.passwordExpiresAt
+    });
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ message: 'Failed to change password' });
+  }
+};
 
 module.exports.helpers = {
   getAccountSecurityState,

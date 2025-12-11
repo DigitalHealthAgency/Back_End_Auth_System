@@ -137,7 +137,7 @@ async function seedUsers() {
       });
 
       await user.save();
-      console.log(`✓ Created: ${userData.email} (${userData.role})`);
+      console.log(` Created: ${userData.email} (${userData.role})`);
     }
 
     console.log('\n' + '='.repeat(80));

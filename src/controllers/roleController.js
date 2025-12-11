@@ -1,5 +1,5 @@
 // src/controllers/roleController.js
-// 🔧 ROLE MANAGEMENT CONTROLLER
+//  ROLE MANAGEMENT CONTROLLER
 // Handles role assignment and management for DHA System Administrators
 
 const User = require('../models/User');

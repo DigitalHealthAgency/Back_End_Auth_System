@@ -50,7 +50,7 @@ const sendWelcomeEmail = async (email, username, temporaryPassword, role) => {
               <p><strong>Role:</strong> ${role}</p>
             </div>
 
-            <p><strong>⚠️ Important Security Instructions:</strong></p>
+            <p><strong> Important Security Instructions:</strong></p>
             <ul>
               <li>You must change your password upon first login</li>
               <li>Do not share your password with anyone</li>
@@ -80,14 +80,14 @@ const sendWelcomeEmail = async (email, username, temporaryPassword, role) => {
     });
 
     if (result.success === false) {
-      console.error('[EMAIL] ❌ Failed to send welcome email:', result.message);
+      console.error('[EMAIL]  Failed to send welcome email:', result.message);
       return false;
     }
 
-    console.log(`[EMAIL] ✅ Welcome email sent successfully to ${email}`);
+    console.log(`[EMAIL]  Welcome email sent successfully to ${email}`);
     return true;
   } catch (error) {
-    console.error('[EMAIL] ❌ Failed to send welcome email:', error.message);
+    console.error('[EMAIL]  Failed to send welcome email:', error.message);
     console.error('[EMAIL] Error details:', error);
     return false;
   }
@@ -124,11 +124,11 @@ exports.getAllUsers = async (req, res) => {
         query.accountStatus = 'active';
         query.suspended = false;
       } else if (status === 'inactive') {
-        query.accountStatus = { $in: ['pending', 'inactive'] };
+        query.accountStatus = { $in: ['pending', 'pending_verification', 'inactive'] };
       } else if (status === 'suspended') {
         query.suspended = true;
       } else if (status === 'pending') {
-        query.accountStatus = 'pending';
+        query.accountStatus = { $in: ['pending', 'pending_verification'] };
       }
     }
 
@@ -142,6 +142,11 @@ exports.getAllUsers = async (req, res) => {
       .lean();
 
     const total = await User.countDocuments(query);
+
+    // Get additional stats for dashboard
+    const activeUsers = await User.countDocuments({ accountStatus: 'active', suspended: false });
+    const pendingUsers = await User.countDocuments({ accountStatus: { $in: ['pending', 'pending_verification'] } });
+    const twoFactorUsers = await User.countDocuments({ twoFactorEnabled: true });
 
     // Transform users for frontend
     const transformedUsers = users.map(user => ({
@@ -157,7 +162,7 @@ exports.getAllUsers = async (req, res) => {
       county: user.county,
       subCounty: user.subCounty,
       role: user.role,
-      status: user.suspended ? 'suspended' : (user.accountStatus === 'active' ? 'active' : user.accountStatus === 'pending' ? 'pending' : 'inactive'),
+      status: user.suspended ? 'suspended' : (user.accountStatus === 'active' ? 'active' : (user.accountStatus === 'pending' || user.accountStatus === 'pending_verification') ? 'pending' : 'inactive'),
       createdAt: user.createdAt,
       lastLogin: user.lastLogin,
       twoFactorEnabled: user.twoFactorEnabled || false,
@@ -165,7 +170,13 @@ exports.getAllUsers = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      users: transformedUsers,
+      data: {
+        users: transformedUsers,
+        total,
+        activeUsers,
+        pendingUsers,
+        twoFactorUsers,
+      },
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -308,7 +319,7 @@ exports.createUser = async (req, res) => {
     const newUser = new User(userData);
     await newUser.save();
 
-    console.log(`[USER CREATION] ✅ User created successfully in database: ${newUser._id}`);
+    console.log(`[USER CREATION]  User created successfully in database: ${newUser._id}`);
     console.log(`[USER CREATION] User details - Email: ${newUser.email}, Role: ${newUser.role}, Type: ${newUser.type}`);
 
     // Log user creation activity
@@ -336,9 +347,9 @@ exports.createUser = async (req, res) => {
     );
 
     if (emailSent) {
-      console.log(`[USER CREATION] ✅ Welcome email sent successfully to ${email}`);
+      console.log(`[USER CREATION]  Welcome email sent successfully to ${email}`);
     } else {
-      console.log(`[USER CREATION] ⚠️ Failed to send welcome email to ${email} - SMTP not configured`);
+      console.log(`[USER CREATION]  Failed to send welcome email to ${email} - SMTP not configured`);
       console.log(`[USER CREATION] Temporary password for ${email}: ${temporaryPassword}`);
     }
 
@@ -368,7 +379,7 @@ exports.createUser = async (req, res) => {
       temporaryPassword: emailSent ? undefined : temporaryPassword, // Only return password if email failed
     });
   } catch (error) {
-    console.error('[USER CREATION] ❌ ERROR:', error.message);
+    console.error('[USER CREATION]  ERROR:', error.message);
     console.error('[USER CREATION] Stack trace:', error.stack);
     res.status(500).json({
       success: false,
@@ -485,6 +496,90 @@ exports.updateUserStatus = async (req, res) => {
 };
 
 /**
+ * @route   PATCH /api/admin/users/:id/role
+ * @desc    Update user role
+ * @access  Admin only
+ */
+exports.updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    // Validate role
+    const validRoles = [
+      'vendor_developer',
+      'vendor_organization',
+      'public_user',
+      'health_facility',
+      'county_administrator',
+      'sub_county_administrator',
+      'dha_system_administrator',
+      'dha_security_officer',
+      'dha_compliance_officer'
+    ];
+
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid role. Valid roles are: ${validRoles.join(', ')}`,
+      });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    const previousRole = user.role;
+
+    // Update role
+    user.role = role;
+    user.lastUpdated = new Date();
+    await user.save();
+
+    // Log role update
+    await logActivity({
+      user: req.user?._id,
+      action: 'USER_ROLE_UPDATED',
+      description: `Updated user role from ${previousRole} to ${role}: ${user.email}`,
+      details: {
+        targetUserId: id,
+        targetUserEmail: user.email,
+        previousRole,
+        newRole: role,
+      },
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
+
+    console.log(`[ROLE UPDATE] Admin ${req.user?.email} changed ${user.email} role from ${previousRole} to ${role}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'User role updated successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        previousRole,
+      },
+    });
+  } catch (error) {
+    console.error('Update user role error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user role',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+
+/**
  * @route   DELETE /api/admin/users/:id
  * @desc    Delete user
  * @access  Admin only
@@ -525,6 +620,98 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to delete user',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+
+/**
+ * @route   GET /api/admin/users/export
+ * @desc    Export users to CSV
+ * @access  Admin only
+ */
+exports.exportUsers = async (req, res) => {
+  try {
+    const { search, role, status } = req.query;
+
+    // Build query
+    let query = {};
+
+    if (search) {
+      query.$or = [
+        { email: { $regex: search, $options: 'i' } },
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { organizationName: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (role) {
+      query.role = role;
+    }
+
+    if (status) {
+      if (status === 'pending') {
+        query.accountStatus = { $in: ['pending', 'pending_verification'] };
+      } else {
+        query.accountStatus = status;
+      }
+    }
+
+    // Fetch all matching users
+    const users = await User.find(query)
+      .select('email firstName lastName organizationName type role accountStatus twoFactorEnabled createdAt lastLogin phoneNumber')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Generate CSV
+    const csvRows = [
+      ['Email', 'Name', 'Type', 'Role', 'Status', '2FA Enabled', 'Phone', 'Created At', 'Last Login']
+    ];
+
+    users.forEach(user => {
+      const name = user.type === 'individual'
+        ? `${user.firstName} ${user.lastName}`
+        : user.organizationName;
+
+      csvRows.push([
+        user.email || '',
+        name || '',
+        user.type || '',
+        user.role || '',
+        user.accountStatus || '',
+        user.twoFactorEnabled ? 'Yes' : 'No',
+        user.phoneNumber || '',
+        user.createdAt ? new Date(user.createdAt).toISOString() : '',
+        user.lastLogin ? new Date(user.lastLogin).toISOString() : 'Never'
+      ]);
+    });
+
+    const csvContent = csvRows.map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+
+    // Log export activity
+    await logActivity({
+      user: req.user?._id,
+      action: 'USERS_EXPORTED',
+      description: `Exported ${users.length} users to CSV`,
+      details: {
+        count: users.length,
+        filters: { search, role, status }
+      },
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=users-export-${Date.now()}.csv`);
+    res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('Export users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export users',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }

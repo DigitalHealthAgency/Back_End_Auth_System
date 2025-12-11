@@ -1,4 +1,4 @@
-// ✅ CRITICAL SECURITY FIX: Password History & Expiry Utilities
+//  CRITICAL SECURITY FIX: Password History & Expiry Utilities
 // SRS Requirements: FR-AUTH-003 (Password Management)
 
 const bcrypt = require('bcryptjs');
@@ -34,14 +34,19 @@ const isPasswordInHistory = async (newPassword, passwordHistory = []) => {
 const addPasswordToHistory = (user, currentPasswordHash) => {
   const history = user.passwordHistory || [];
 
+  // If maxPasswordHistory is 0, don't add to history
+  const maxHistory = user.maxPasswordHistory !== undefined ? user.maxPasswordHistory : 5;
+  if (maxHistory === 0) {
+    return [];
+  }
+
   // Add current password to history
   history.unshift({
     hash: currentPasswordHash,
     changedAt: new Date()
   });
 
-  // Keep only last 5 passwords (or maxPasswordHistory)
-  const maxHistory = user.maxPasswordHistory || 5;
+  // Keep only last maxHistory passwords
   if (history.length > maxHistory) {
     history.splice(maxHistory);
   }

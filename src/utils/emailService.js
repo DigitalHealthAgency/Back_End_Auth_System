@@ -1,4 +1,4 @@
-// ✅ DHA EMAIL SERVICE
+//  DHA EMAIL SERVICE
 // Handles email notifications for team invitations and suspension appeals
 
 const nodemailer = require('nodemailer');
@@ -147,6 +147,16 @@ const emailTemplates = {
  */
 const sendEmail = async (options) => {
   try {
+    // DISABLE EMAIL SENDING DURING TESTS
+    if (process.env.NODE_ENV === 'test') {
+      console.log('[EMAIL] Test mode - email NOT sent:', {
+        to: options.to,
+        subject: options.subject || options.template,
+        template: options.template
+      });
+      return { success: true, message: 'Email disabled in test mode' };
+    }
+
     // If email is not configured, log and return
     if (!process.env.SMTP_USER) {
       console.log('[EMAIL] Email not configured. Would send:', {

@@ -1,4 +1,4 @@
-// ✅ TEST SETUP - Runs before each test file
+//  TEST SETUP - Runs before each test file
 // Configures environment and global mocks
 
 require('dotenv').config({ path: '.env.test' });

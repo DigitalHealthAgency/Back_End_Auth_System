@@ -1,4 +1,4 @@
-// ✅ DHA STATE TRANSITION MIDDLEWARE
+//  DHA STATE TRANSITION MIDDLEWARE
 // FR-USER-LIFECYCLE-001: Enforce state transition validation in API routes
 // Validates state changes before they are applied
 

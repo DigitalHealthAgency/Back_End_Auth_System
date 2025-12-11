@@ -1,4 +1,4 @@
-# 🔐 Kenya DHA Auth Service - Complete API Documentation
+#  Kenya DHA Auth Service - Complete API Documentation
 
 **Base URL:** `http://localhost:8000/api/auth` (via API Gateway)
 **Direct URL:** `http://localhost:5000/api/auth` (for internal Docker services only)
@@ -8,7 +8,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 1. [Authentication & Authorization](#authentication--authorization)
 2. [User Management](#user-management)
@@ -27,7 +27,7 @@
 
 ---
 
-## 🔑 Authentication & Authorization
+##  Authentication & Authorization
 
 ### 1. Register User (Individual)
 
@@ -282,7 +282,7 @@ Set password for board members created without passwords.
 
 ---
 
-## 👤 User Management
+##  User Management
 
 ### 6. Get Current User Profile
 
@@ -562,7 +562,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 🔒 Password Management
+##  Password Management
 
 ### 14. Forgot Password (Request Code)
 
@@ -671,7 +671,7 @@ Complete password reset using recovery key or reset token.
 
 ---
 
-## 🔐 Two-Factor Authentication (2FA)
+##  Two-Factor Authentication (2FA)
 
 ### 17. Generate 2FA Secret
 
@@ -774,7 +774,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 🔄 Session Management
+##  Session Management
 
 ### 20. Get Active Sessions
 
@@ -861,7 +861,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 🛡️ Security & Audit
+##  Security & Audit
 
 ### 22. Get Security Logs
 
@@ -1029,7 +1029,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 🔧 Internal Service APIs
+##  Internal Service APIs
 
 These endpoints are for **microservice-to-microservice** communication only. They require the `x-internal-service: true` header.
 
@@ -1449,7 +1449,7 @@ x-internal-service: true
 
 ---
 
-## 👥 User Service APIs
+##  User Service APIs
 
 These endpoints provide user information for **microservice communication**. They require the `x-service-request: true` header.
 
@@ -1652,7 +1652,7 @@ x-service-request: true
 
 ---
 
-## 📊 Analytics APIs
+##  Analytics APIs
 
 All analytics endpoints require authentication.
 
@@ -1763,7 +1763,7 @@ Authorization: Bearer <token>
 
 ---
 
-## ⏰ Cron Job Management
+##  Cron Job Management
 
 Admin-only endpoints for managing scheduled jobs.
 
@@ -1916,7 +1916,7 @@ Authorization: Bearer <admin-token>
 
 ---
 
-## 📥 Recovery & File Downloads
+##  Recovery & File Downloads
 
 ### 49. Download Recovery Key PDF
 
@@ -1950,7 +1950,7 @@ Content-Disposition: attachment; filename="recovery-key-ABC123.pdf"
 
 ---
 
-## ❌ Error Codes
+##  Error Codes
 
 ### HTTP Status Codes
 
@@ -2029,7 +2029,7 @@ Content-Disposition: attachment; filename="recovery-key-ABC123.pdf"
 
 ---
 
-## 🔑 Authentication Headers
+##  Authentication Headers
 
 ### Standard Authentication
 
@@ -2097,7 +2097,7 @@ For API support or to report issues:
 
 ---
 
-## 🔄 Rate Limits
+##  Rate Limits
 
 **Note:** Rate limiting is handled by the API Gateway layer. The following limits apply:
 
@@ -2110,7 +2110,7 @@ Exceeding rate limits will return a `429 Too Many Requests` response.
 
 ---
 
-## 📝 Notes
+##  Notes
 
 1. **MongoDB Atlas Cloud:** All user data is stored in MongoDB Atlas Cloud, not local MongoDB
 2. **API Gateway:** All frontend requests should go through API Gateway at `http://localhost:8000`

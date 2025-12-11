@@ -17,8 +17,8 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
   email: {
-    type: String,
-    sparse: true // allow null for orgs
+    type: String
+    // Note: Uniqueness and sparse indexing is handled by schema.index() below
   },
   phone: { type: String },
 
@@ -111,6 +111,13 @@ const userSchema = new mongoose.Schema({
     index: true // For filtering users by organization
   },
 
+  // Organization ID reference (for SOD checks)
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    sparse: true,
+    index: true
+  },
+
   // Organization fields
   organizationName: {
     type: String,
@@ -169,16 +176,17 @@ const userSchema = new mongoose.Schema({
     sparse: true
   },
 
-  // ✅ FIXED: Password History (SRS Requirement - Last 5 passwords)
+  //  FIXED: Password History (SRS Requirement - Last 5 passwords)
   passwordHistory: [{
     hash: { type: String, required: true },
     changedAt: { type: Date, default: Date.now }
   }],
   maxPasswordHistory: { type: Number, default: 5 },
 
-  // ✅ FIXED: Password Expiry (SRS Requirement - 90 days)
+  //  FIXED: Password Expiry (SRS Requirement - 90 days)
   passwordExpiresAt: { type: Date },
   passwordLastChanged: { type: Date, default: Date.now },
+  passwordChangedAt: { type: Date }, // Timestamp when password was last changed
   passwordExpiryDays: { type: Number, default: 90 },
   
   // First time password setup
@@ -186,14 +194,25 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
+
   setupToken: {
     type: String,
     sparse: true,
     select: false
   },
-  
+
   setupTokenExpires: {
+    type: Date,
+    sparse: true
+  },
+
+  // Admin-created user password management
+  requirePasswordChange: {
+    type: Boolean,
+    default: false
+  },
+
+  temporaryPasswordExpiry: {
     type: Date,
     sparse: true
   },
@@ -206,6 +225,12 @@ const userSchema = new mongoose.Schema({
   // Suspicious Activity Alerts
   suspiciousActivityAlerts: { type: Boolean, default: true },
 
+  // Email Verification
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+
   // Account Status
   accountStatus: {
     type: String,
@@ -216,6 +241,7 @@ const userSchema = new mongoose.Schema({
       'deactivated',              // Permanently disabled (cannot be reactivated)
       'cancelled',                 // User-initiated cancellation
       'suspended',                 // Temporarily suspended by admin
+      'locked', 
       'pending_verification',      // Account created, awaiting verification
       'pending_registration',      // Registration started but not completed
       'pending_setup',             // Account created, needs first-time setup
@@ -262,6 +288,9 @@ const userSchema = new mongoose.Schema({
   recoveryKeyHash: { type: String, default: null, select: false },
   recoveryKeyGeneratedAt: { type: Date },
 
+  // Password Reset Token (for test compatibility)
+  passwordResetToken: { type: String, default: null },
+
   // Sessions
   sessions: [{
     sessionId: { type: String, required: true },
@@ -283,7 +312,7 @@ const userSchema = new mongoose.Schema({
     public_id: String
   },
 
-  // ✅ DHA-SPECIFIC RBAC: 9 Roles with Granular Permissions (SRS Requirement)
+  //  DHA-SPECIFIC RBAC: 9 Roles with Granular Permissions (SRS Requirement)
   // FR-RBAC-001: Role-Based Access Control for Digital Health Certification
   role: {
     type: String,
@@ -315,7 +344,7 @@ const userSchema = new mongoose.Schema({
   suspendedAt: { type: Date },
   suspendedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-  // ✅ FIXED: Account Lockout (SRS Requirement - 30-minute temporary)
+  //  FIXED: Account Lockout (SRS Requirement - 30-minute temporary)
   lockedUntil: { type: Date },
   failedAttempts: { type: Number, default: 0 },
 
@@ -341,9 +370,11 @@ const userSchema = new mongoose.Schema({
  */
 
 // Store original state before changes
-userSchema.pre('save', function(next) {
+userSchema.pre('save', async function(next) {
   if (!this.isNew && this.isModified('accountStatus')) {
-    this._original = { accountStatus: this.constructor.findOne({ _id: this._id }).accountStatus };
+    // Get the original state from the database before modification
+    const originalDoc = await this.constructor.findOne({ _id: this._id }).select('accountStatus');
+    this._original = { accountStatus: originalDoc ? originalDoc.accountStatus : this.accountStatus };
   }
   next();
 });

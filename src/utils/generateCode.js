@@ -1,5 +1,5 @@
-const generate6DigitCode = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+const generate4DigitCode = () => {
+  return Math.floor(1000 + Math.random() * 9000).toString();
 };
 
-module.exports = generate6DigitCode;
+module.exports = generate4DigitCode;

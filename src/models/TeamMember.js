@@ -1,4 +1,4 @@
-// ✅ DHA TEAM MEMBER MODEL
+//  DHA TEAM MEMBER MODEL
 // FR-TEAM-MGMT-001: Multi-user organizational management
 // Manages team members within vendor organizations
 

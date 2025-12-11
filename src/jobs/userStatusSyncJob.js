@@ -211,7 +211,7 @@ class UserStatusSyncJob {
 
       await User.findByIdAndUpdate(user._id, updateData);
 
-      console.log(`[${this.name}] ✅ UPDATED user ${user._id}: ${user.accountStatus} -> ${expectedAccountStatus}` + 
+      console.log(`[${this.name}]  UPDATED user ${user._id}: ${user.accountStatus} -> ${expectedAccountStatus}` + 
                   (registrationNumber && !user.registrationNumber ? ` (added registration number: ${registrationNumber})` : ''));
 
       // Log the sync action

@@ -1,4 +1,4 @@
-// ✅ CRITICAL SECURITY FIX: Standardized Error Codes
+//  CRITICAL SECURITY FIX: Standardized Error Codes
 // SRS Requirements: Error Handling Section
 
 module.exports = {
@@ -41,24 +41,39 @@ module.exports = {
 
   // ===== PASSWORD ERRORS (NEW) =====
   PASSWORD_TOO_SHORT: {
-    code: 'PASSWORD-001',
+    code: 'PASSWORD_TOO_SHORT',
     message: 'Password must be at least 12 characters long (SRS requirement)',
     httpStatus: 400
   },
   PASSWORD_IN_HISTORY: {
-    code: 'PASSWORD-002',
-    message: 'Password has been used recently. Please choose a different password.',
+    code: 'PASSWORD_IN_HISTORY',
+    message: 'Password has been recently used. Please choose a different password.',
     httpStatus: 400
   },
   PASSWORD_EXPIRED: {
-    code: 'PASSWORD-003',
+    code: 'PASSWORD_EXPIRED',
     message: 'Your password has expired. Please change your password to continue.',
     httpStatus: 401
   },
   PASSWORD_EXPIRING_SOON: {
-    code: 'PASSWORD-004',
+    code: 'PASSWORD_EXPIRING_SOON',
     message: 'Your password will expire soon. Please change it.',
     httpStatus: 200
+  },
+  INVALID_CURRENT_PASSWORD: {
+    code: 'INVALID_CURRENT_PASSWORD',
+    message: 'Current password is incorrect',
+    httpStatus: 401
+  },
+  WEAK_PASSWORD: {
+    code: 'WEAK_PASSWORD',
+    message: 'Password does not meet complexity requirements',
+    httpStatus: 400
+  },
+  MISSING_PASSWORDS: {
+    code: 'MISSING_PASSWORDS',
+    message: 'Both current and new passwords are required',
+    httpStatus: 400
   },
 
   // ===== CAPTCHA ERRORS (NEW) =====
@@ -75,6 +90,11 @@ module.exports = {
   CAPTCHA_VERIFICATION_FAILED: {
     code: 'CAPTCHA-003',
     message: 'CAPTCHA verification failed',
+    httpStatus: 400
+  },
+  CAPTCHA_SCORE_TOO_LOW: {
+    code: 'CAPTCHA-004',
+    message: 'CAPTCHA score too low. Please try again.',
     httpStatus: 400
   },
 
@@ -104,6 +124,43 @@ module.exports = {
   AUTHZ_003: {
     code: 'AUTHZ-003',
     message: 'State Violation',
+    httpStatus: 403
+  },
+
+  // ===== SEPARATION OF DUTIES ERRORS (NEW) =====
+  SOD_001: {
+    code: 'SOD-001',
+    message: 'Self-approval violation - Cannot approve own application',
+    httpStatus: 403
+  },
+  SOD_002: {
+    code: 'SOD-002',
+    message: 'Conflict of interest violation',
+    httpStatus: 403
+  },
+  SOD_003: {
+    code: 'SOD-003',
+    message: 'Access denied - Resource not assigned to you',
+    httpStatus: 403
+  },
+  SOD_004: {
+    code: 'SOD-004',
+    message: 'Workflow separation violation - Cannot perform multiple critical steps',
+    httpStatus: 403
+  },
+  SOD_005: {
+    code: 'SOD-005',
+    message: 'Vendor review restriction - Vendors cannot review or test applications',
+    httpStatus: 403
+  },
+  SOD_006: {
+    code: 'SOD-006',
+    message: 'Admin approval restriction - System administrators cannot approve certifications',
+    httpStatus: 403
+  },
+  SOD_007: {
+    code: 'SOD-007',
+    message: 'Minimum reviewers requirement not met',
     httpStatus: 403
   },
 

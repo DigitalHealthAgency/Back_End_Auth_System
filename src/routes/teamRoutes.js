@@ -1,4 +1,4 @@
-// ✅ DHA TEAM MANAGEMENT ROUTES
+//  DHA TEAM MANAGEMENT ROUTES
 // FR-TEAM-MGMT-001: Multi-user organizational management routes
 
 const express = require('express');

@@ -2,7 +2,7 @@
 
 Complete guide for containerizing and deploying the Elano Auth System service using Docker and Kubernetes.
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
@@ -14,7 +14,7 @@ Complete guide for containerizing and deploying the Elano Auth System service us
 - [Troubleshooting](#troubleshooting)
 - [Security](#security)
 
-## 🎯 Overview
+##  Overview
 
 The Auth System service handles authentication, authorization, and user management for the Elano platform.
 
@@ -64,7 +64,7 @@ trivy --version
 - **OpenWeather**: Weather API
 - **Google AI Studio**: Gemini API key
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Clone and Configure
 
@@ -210,7 +210,7 @@ docker rm elano-auth-system
 docker rmi elano/auth-system-service:latest
 ```
 
-## ☸️ Kubernetes Deployment
+## ☸ Kubernetes Deployment
 
 ### Prerequisites
 
@@ -338,7 +338,7 @@ kubectl rollout undo deployment/elano-auth-deployment -n elano
 kubectl rollout history deployment/elano-auth-deployment -n elano
 ```
 
-## ⚙️ Configuration
+##  Configuration
 
 ### Environment Variables
 
@@ -396,7 +396,7 @@ GEMINI_API_KEY=your_gemini_key
 Secrets are loaded from `.env` file automatically.
 
 #### Kubernetes
-**⚠️ IMPORTANT**: The `k8s/secrets.yaml` contains base64-encoded values. For production:
+** IMPORTANT**: The `k8s/secrets.yaml` contains base64-encoded values. For production:
 
 1. **Use Sealed Secrets**:
 ```bash
@@ -438,7 +438,7 @@ HPA configuration:
 - **Scale up**: When CPU > 70% or Memory > 80%
 - **Scale down**: After 5 minutes of reduced load
 
-## 📊 Monitoring
+##  Monitoring
 
 ### Health Checks
 
@@ -509,7 +509,7 @@ Prometheus alerts configured in `k8s/monitoring.yaml`:
 - **AuthServiceHealthCheckFailing**: Health check fails for 2 minutes
 - **AuthServiceHighResponseTime**: 95th percentile > 2s for 5 minutes
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -630,7 +630,7 @@ kubectl top pod -n elano -l app=elano-auth-service
 kubectl exec -it -n elano <pod-name> -- sh
 ```
 
-## 🔒 Security
+##  Security
 
 ### Docker Security
 

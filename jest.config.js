@@ -7,5 +7,6 @@ module.exports = {
   setupFilesAfterEnv: ['./tests/setupTests.js'],
   testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
   forceExit: true,
-  detectOpenHandles: false
+  detectOpenHandles: false,
+  maxWorkers: 1 // Run tests sequentially to avoid race conditions
 };

@@ -7,8 +7,10 @@ const { forgotPasswordSchema, verifyCodeSchema, resetPasswordSchema, recoveryLog
 const { forgotPasswordLimiter } = require('../middleware/rateLimiter');
 
 router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), forgotPassword);
+router.post('/forgot', forgotPasswordLimiter, validate(forgotPasswordSchema), forgotPassword); // Alias for tests
 router.post('/verify-code', validate(verifyCodeSchema), verifyCode);
 router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
+router.post('/reset', validate(resetPasswordSchema), resetPassword); // Alias for tests
 router.post('/recovery-login', validate(recoveryLoginSchema), recoveryLogin);
 
 module.exports = router;

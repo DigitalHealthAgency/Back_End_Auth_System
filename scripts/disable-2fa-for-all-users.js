@@ -24,7 +24,7 @@ const disable2FAForAllUsers = async () => {
       }
     );
 
-    console.log(`✅ Successfully disabled 2FA for ${result.modifiedCount} users`);
+    console.log(` Successfully disabled 2FA for ${result.modifiedCount} users`);
 
     // Show users who had 2FA enabled
     const users = await User.find({}).select('email username googleId');
@@ -34,7 +34,7 @@ const disable2FAForAllUsers = async () => {
     });
 
     mongoose.connection.close();
-    console.log('\n✅ Done! All users can now login without 2FA.');
+    console.log('\n Done! All users can now login without 2FA.');
   } catch (error) {
     console.error('Error:', error);
     process.exit(1);

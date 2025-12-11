@@ -1,5 +1,5 @@
 // src/constants/roles.js
-// 🎯 KENYA DHA CERTIFICATION SYSTEM - ROLE-BASED ACCESS CONTROL (RBAC)
+//  KENYA DHA CERTIFICATION SYSTEM - ROLE-BASED ACCESS CONTROL (RBAC)
 // Complete implementation of 9 user roles with granular permissions
 
 /**

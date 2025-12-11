@@ -1,4 +1,4 @@
-// ✅ DHA RBAC PERMISSION TESTS
+//  DHA RBAC PERMISSION TESTS
 // Tests for permission matrix and authorization logic
 
 const { hasPermission, getRolePermissions, getResourceActions, isVendorRole, isDHARole, canApproveCertifications } = require('../../src/config/permissions');

@@ -1,4 +1,4 @@
-// ✅ DHA INTEGRATION TESTS - END-TO-END FLOWS
+//  DHA INTEGRATION TESTS - END-TO-END FLOWS
 // Tests for complete user journeys across multiple endpoints
 
 const request = require('supertest');
@@ -9,7 +9,6 @@ const User = require('../../src/models/User');
 const PasswordReset = require('../../src/models/PasswordReset');
 const securityEvent = require('../../src/models/securityEvent');
 const { connectDB, disconnectDB, clearDatabase } = require('../helpers/db');
-const { resetAllMocks } = require('../mocks/services');
 
 describe('Integration Tests - Complete User Journeys', () => {
   beforeAll(async () => {
@@ -22,7 +21,6 @@ describe('Integration Tests - Complete User Journeys', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
   });
 
   describe('Journey: Registration → Login → 2FA Setup → Logout', () => {
@@ -212,10 +210,10 @@ describe('Integration Tests - Complete User Journeys', () => {
           });
       }
 
-      // Step 2: Verify account is suspended
+      // Step 2: Verify account is suspended (after 5 failed attempts)
       const user = await User.findById(testUser._id);
       expect(user.accountStatus).toBe('suspended');
-      expect(user.suspended).toBe(true);
+      expect(user.lockedUntil).toBeDefined();
 
       // Step 3: Verify cannot login even with correct password
       const loginRes = await request(app)

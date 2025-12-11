@@ -16,7 +16,7 @@ async function createTwoAdmins() {
     const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27018/dha_db';
     console.log('Connecting to MongoDB...');
     await mongoose.connect(mongoURI);
-    console.log('✓ Connected to MongoDB successfully!\n');
+    console.log(' Connected to MongoDB successfully!\n');
 
     console.log('='.repeat(70));
     console.log('CREATING TWO ADMIN USERS');
@@ -64,7 +64,7 @@ async function createTwoAdmins() {
 
       if (existingUser) {
         // Update existing user to make them admin
-        console.log(`\n📝 User exists: ${adminData.email}`);
+        console.log(`\n User exists: ${adminData.email}`);
         console.log('   Updating to system administrator...');
 
         existingUser.role = 'dha_system_administrator';
@@ -76,7 +76,7 @@ async function createTwoAdmins() {
 
         await existingUser.save();
 
-        console.log(`   ✓ Updated: ${adminData.firstName} ${adminData.lastName}`);
+        console.log(`    Updated: ${adminData.firstName} ${adminData.lastName}`);
         console.log(`   Email:    ${adminData.email}`);
         console.log(`   Username: ${existingUser.username}`);
         console.log(`   Role:     ${existingUser.role}`);
@@ -85,12 +85,12 @@ async function createTwoAdmins() {
         updatedCount++;
       } else {
         // Create new user
-        console.log(`\n✨ Creating new user: ${adminData.email}`);
+        console.log(`\n Creating new user: ${adminData.email}`);
 
         const user = new User(adminData);
         await user.save();
 
-        console.log(`   ✓ Created: ${adminData.firstName} ${adminData.lastName}`);
+        console.log(`    Created: ${adminData.firstName} ${adminData.lastName}`);
         console.log(`   Email:    ${adminData.email}`);
         console.log(`   Username: ${adminData.username}`);
         console.log(`   Role:     ${adminData.role}`);
@@ -101,35 +101,35 @@ async function createTwoAdmins() {
     }
 
     console.log('\n' + '='.repeat(70));
-    console.log('✓ SUCCESS! ADMIN USERS READY!');
+    console.log(' SUCCESS! ADMIN USERS READY!');
     console.log('='.repeat(70));
-    console.log(`\n📊 Summary:`);
+    console.log(`\n Summary:`);
     console.log(`   • Created: ${createdCount} new admin(s)`);
     console.log(`   • Updated: ${updatedCount} existing user(s) to admin`);
     console.log(`   • Total:   ${createdCount + updatedCount} system administrators`);
 
-    console.log('\n🎯 Login Credentials:');
+    console.log('\n Login Credentials:');
     console.log('─'.repeat(70));
-    console.log('\n1️⃣  First Admin:');
+    console.log('\n1⃣  First Admin:');
     console.log('   Email:    ianmathew186@gmail.com');
     console.log('   Username: ianmathew');
     console.log('   Password: Admin123!');
     console.log('   Role:     DHA System Administrator');
 
-    console.log('\n2️⃣  Second Admin:');
+    console.log('\n2⃣  Second Admin:');
     console.log('   Email:    icp.smartprojects@gmail.com');
     console.log('   Username: icpsmartprojects');
     console.log('   Password: Admin123!');
     console.log('   Role:     DHA System Administrator');
 
     console.log('\n' + '='.repeat(70));
-    console.log('🚀 You can now login at: http://localhost:5173/login');
+    console.log(' You can now login at: http://localhost:5173/login');
     console.log('📍 Both accounts will redirect to: /admin-dashboard');
     console.log('='.repeat(70));
-    console.log('\n😊 READY TO SMILE! All set up successfully! 🎉\n');
+    console.log('\n😊 READY TO SMILE! All set up successfully! \n');
 
   } catch (error) {
-    console.error('\n❌ Error creating admin users:', error.message);
+    console.error('\n Error creating admin users:', error.message);
     console.error('Stack trace:', error.stack);
     process.exit(1);
   } finally {

@@ -1,4 +1,4 @@
-// ✅ CRITICAL SECURITY FIXES - Migration Script
+//  CRITICAL SECURITY FIXES - Migration Script
 // Run this migration to apply all security fixes to existing users
 // This migration addresses all 8 critical audit findings
 
@@ -32,7 +32,7 @@ async function runMigration() {
     const settings = await SystemSettings.getSettings();
     settings.require2FA = true;
     await settings.save();
-    console.log('✅ System settings updated: 2FA now mandatory globally\n');
+    console.log(' System settings updated: 2FA now mandatory globally\n');
 
     // Step 2: Get all users
     console.log('Step 2: Fetching all users...');
@@ -82,7 +82,7 @@ async function runMigration() {
         // 3.4: Clear account lockouts and reset failed attempts
         if (user.accountStatus === 'locked' || user.failedAttempts > 0) {
           user.accountStatus = 'active';
-          user.lockedUntil = null;
+          user.lockedUntil = undefined;
           user.failedAttempts = 0;
           console.log('  → Account unlocked and failed attempts reset');
         }
@@ -100,7 +100,7 @@ async function runMigration() {
         // Save user
         await user.save();
         successCount++;
-        console.log('  ✅ User migrated successfully\n');
+        console.log('   User migrated successfully\n');
 
         // 3.7: Send notification email
         try {
@@ -130,13 +130,13 @@ async function runMigration() {
 
                   ${!user.twoFactorEnabled ? `
                   <div style="background-color: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #92400e;">⚠️ Action Required</h3>
+                    <h3 style="margin-top: 0; color: #92400e;"> Action Required</h3>
                     <p style="margin-bottom: 0; color: #78350f;">You must set up Two-Factor Authentication on your next login. This is mandatory for all users.</p>
                   </div>
                   ` : ''}
 
                   <div style="background-color: #e0f2fe; padding: 15px; border-left: 4px solid #0284c7; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #075985;">📅 Password Expiry Notice</h3>
+                    <h3 style="margin-top: 0; color: #075985;"> Password Expiry Notice</h3>
                     <p style="margin-bottom: 0; color: #0c4a6e;">Your current password will expire on <strong>${user.passwordExpiresAt.toLocaleDateString()}</strong>. You'll receive reminders as this date approaches.</p>
                   </div>
 
@@ -154,10 +154,10 @@ async function runMigration() {
                 </div>
               `
             });
-            console.log('  📧 Notification email sent\n');
+            console.log('   Notification email sent\n');
           }
         } catch (emailError) {
-          console.error(`  ⚠️ Failed to send notification email: ${emailError.message}\n`);
+          console.error(`   Failed to send notification email: ${emailError.message}\n`);
           // Don't fail the migration if email fails
         }
 
@@ -167,7 +167,7 @@ async function runMigration() {
           user: user.email || user.organizationEmail || user.username,
           error: userError.message
         });
-        console.error(`  ❌ Error migrating user: ${userError.message}\n`);
+        console.error(`   Error migrating user: ${userError.message}\n`);
       }
     }
 
@@ -188,7 +188,7 @@ async function runMigration() {
       console.log('\n');
     }
 
-    console.log('✅ Migration completed!\n');
+    console.log(' Migration completed!\n');
     console.log('Next Steps:');
     console.log('1. Users without 2FA will be prompted to set it up on next login');
     console.log('2. Password expiry warnings will be sent at 30, 14, 7, and 1 day(s) before expiry');
@@ -205,7 +205,7 @@ async function runMigration() {
     };
 
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error(' Migration failed:', error);
     throw error;
   }
 }
@@ -228,7 +228,7 @@ async function rollbackMigration() {
       user.passwordHistory = [];
       user.passwordExpiresAt = null;
       user.accountStatus = 'active';
-      user.lockedUntil = null;
+      user.lockedUntil = undefined;
       user.failedAttempts = 0;
       await user.save();
     }
@@ -238,11 +238,11 @@ async function rollbackMigration() {
     settings.require2FA = false;
     await settings.save();
 
-    console.log('✅ Rollback completed\n');
+    console.log(' Rollback completed\n');
     return { success: true };
 
   } catch (error) {
-    console.error('❌ Rollback failed:', error);
+    console.error(' Rollback failed:', error);
     throw error;
   }
 }
@@ -256,7 +256,7 @@ if (require.main === module) {
 
   mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/huduma-hub')
     .then(async () => {
-      console.log('✅ Connected to MongoDB\n');
+      console.log(' Connected to MongoDB\n');
 
       if (command === 'rollback') {
         await rollbackMigration();
@@ -265,11 +265,11 @@ if (require.main === module) {
       }
 
       await mongoose.connection.close();
-      console.log('✅ Database connection closed\n');
+      console.log(' Database connection closed\n');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('❌ Database connection failed:', error);
+      console.error(' Database connection failed:', error);
       process.exit(1);
     });
 }

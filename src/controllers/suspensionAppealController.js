@@ -1,4 +1,4 @@
-// ✅ DHA SUSPENSION APPEAL CONTROLLER
+//  DHA SUSPENSION APPEAL CONTROLLER
 // FR-USER-LIFECYCLE-002: Suspension appeal workflow
 // Handles user appeals for account suspensions
 

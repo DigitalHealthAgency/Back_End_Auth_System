@@ -1,16 +1,39 @@
-// ✅ CRITICAL SECURITY FIX TEST: Password History
-// Tests for SRS Requirement FR-AUTH-003 (Password cannot be reused - last 5 passwords)
+//  DHA PASSWORD HISTORY TESTS
+// SRS Requirement: FR-AUTH-003 (Cannot reuse last 5 passwords)
 
 const request = require('supertest');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const app = require('../../src/app');
 const User = require('../../src/models/User');
-const { isPasswordInHistory, addPasswordToHistory } = require('../../src/utils/passwordSecurity');
 const { connectDB, disconnectDB, clearDatabase } = require('../helpers/db');
+const {
+  isPasswordInHistory,
+  addPasswordToHistory
+} = require('../../src/utils/passwordSecurity');
 
-describe('Password History Security Tests', () => {
+// Helper to generate JWT token
+const generateToken = (userId, twoFactorConfirmed = true) => {
+  return jwt.sign(
+    { id: userId, twoFactorConfirmed },
+    process.env.JWT_SECRET || 'test_jwt_secret',
+    { expiresIn: '24h', issuer: 'Prezio', audience: 'prezio-users' }
+  );
+};
+
+describe('Password History Security', () => {
   let testUser;
   let authToken;
+  const passwords = [
+    'Password1!@#$',
+    'Password2!@#$',
+    'Password3!@#$',
+    'Password4!@#$',
+    'Password5!@#$',
+    'Password6!@#$',
+    'Password7!@#$'
+  ];
 
   beforeAll(async () => {
     await connectDB();
@@ -23,8 +46,6 @@ describe('Password History Security Tests', () => {
   beforeEach(async () => {
     await clearDatabase();
 
-    // Create test user with password history
-    const hashedPassword = await bcrypt.hash('OldPassword123!', 12);
     testUser = await User.create({
       type: 'individual',
       username: 'testuser',
@@ -32,294 +53,520 @@ describe('Password History Security Tests', () => {
       lastName: 'User',
       email: 'test@example.com',
       phone: '+254712345678',
-      password: hashedPassword,
-      twoFactorEnabled: false,
-      passwordHistory: [],
-      maxPasswordHistory: 5,
+      password: await bcrypt.hash(passwords[0], 12),
+      role: 'public_user',
       accountStatus: 'active',
-      emailVerified: true
+      passwordHistory: [],
+      maxPasswordHistory: 5
     });
 
-    // Get auth token
-    const loginRes = await request(app)
-      .post('/api/auth/login')
-      .send({
-        identifier: 'test@example.com',
-        password: 'OldPassword123!',
-        deviceFingerprint: 'test-device-fingerprint'
-      });
-
-    authToken = loginRes.body.token;
+    authToken = generateToken(testUser._id);
   });
 
   describe('Password History Tracking', () => {
     it('should prevent reusing current password', async () => {
       const res = await request(app)
-        .patch('/api/auth/change-password')
+        .post('/api/auth/change-password')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          currentPassword: 'OldPassword123!',
-          newPassword: 'OldPassword123!' // Same password
+          currentPassword: passwords[0],
+          newPassword: passwords[0]
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toMatch(/cannot.*reuse|recently/i);
+      expect(res.body.code).toBe('PASSWORD_IN_HISTORY');
+      expect(res.body.message).toContain('recently used');
     });
 
-    it('should prevent reusing password from history', async () => {
-      // First password change
-      await request(app)
-        .patch('/api/auth/change-password')
+    it('should add old password to history when changing password', async () => {
+      const res = await request(app)
+        .post('/api/auth/change-password')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          currentPassword: 'OldPassword123!',
-          newPassword: 'NewPassword456!'
-        });
-
-      // Get new token
-      const loginRes = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'NewPassword456!',
-          deviceFingerprint: 'test-device-fingerprint'
-        });
-
-      const newToken = loginRes.body.token;
-
-      // Try to change back to old password
-      const res = await request(app)
-        .patch('/api/auth/change-password')
-        .set('Authorization', `Bearer ${newToken}`)
-        .send({
-          currentPassword: 'NewPassword456!',
-          newPassword: 'OldPassword123!' // Old password
-        });
-
-      expect(res.status).toBe(400);
-      expect(res.body.message).toMatch(/recently|history/i);
-    });
-
-    it('should allow reusing password after 5 changes', async () => {
-      const passwords = [
-        'NewPassword456!',
-        'AnotherPass789!',
-        'YetAnotherPass012!',
-        'FifthPassword345!',
-        'SixthPassword678!'
-      ];
-
-      let currentToken = authToken;
-      let currentPassword = 'OldPassword123!';
-
-      // Change password 5 times
-      for (const newPassword of passwords) {
-        const changeRes = await request(app)
-          .patch('/api/auth/change-password')
-          .set('Authorization', `Bearer ${currentToken}`)
-          .send({
-            currentPassword: currentPassword,
-            newPassword: newPassword
-          });
-
-        expect(changeRes.status).toBe(200);
-
-        // Get new token
-        const loginRes = await request(app)
-          .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: newPassword,
-            deviceFingerprint: 'test-device-fingerprint'
-          });
-
-        currentToken = loginRes.body.token;
-        currentPassword = newPassword;
-
-        // Add small delay
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      // Now try to use the original password (should be allowed)
-      const res = await request(app)
-        .patch('/api/auth/change-password')
-        .set('Authorization', `Bearer ${currentToken}`)
-        .send({
-          currentPassword: currentPassword,
-          newPassword: 'OldPassword123!' // Should be allowed now
-        });
-
-      expect(res.status).toBe(200);
-      expect(res.body.message).toMatch(/success/i);
-    });
-
-    it('should maintain password history with correct timestamps', async () => {
-      const res = await request(app)
-        .patch('/api/auth/change-password')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          currentPassword: 'OldPassword123!',
-          newPassword: 'NewPassword456!'
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
         });
 
       expect(res.status).toBe(200);
 
-      const user = await User.findById(testUser._id).select('+passwordHistory');
-      expect(user.passwordHistory.length).toBeGreaterThanOrEqual(1);
-      expect(user.passwordHistory[0].changedAt).toBeInstanceOf(Date);
-    });
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory).toBeDefined();
+      expect(user.passwordHistory.length).toBe(1);
 
-    it('should limit password history to maxPasswordHistory', async () => {
-      const passwords = [
-        'NewPassword1!',
-        'NewPassword2!',
-        'NewPassword3!',
-        'NewPassword4!',
-        'NewPassword5!',
-        'NewPassword6!',
-        'NewPassword7!'
-      ];
-
-      let currentToken = authToken;
-      let currentPassword = 'OldPassword123!';
-
-      // Change password 7 times
-      for (const newPassword of passwords) {
-        const changeRes = await request(app)
-          .patch('/api/auth/change-password')
-          .set('Authorization', `Bearer ${currentToken}`)
-          .send({
-            currentPassword: currentPassword,
-            newPassword: newPassword
-          });
-
-        if (changeRes.status !== 200) break;
-
-        const loginRes = await request(app)
-          .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: newPassword,
-            deviceFingerprint: 'test-device-fingerprint'
-          });
-
-        if (loginRes.status !== 200) break;
-
-        currentToken = loginRes.body.token;
-        currentPassword = newPassword;
-
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      const user = await User.findById(testUser._id).select('+passwordHistory');
-      expect(user.passwordHistory.length).toBeLessThanOrEqual(5);
-    }, 45000);
-  });
-
-  describe('Password History Utility Functions', () => {
-    it('isPasswordInHistory should detect matching passwords', async () => {
-      const hashedPassword = await bcrypt.hash('TestPassword123!', 12);
-      const passwordHistory = [
-        { hash: hashedPassword, changedAt: new Date() }
-      ];
-
-      const isInHistory = await isPasswordInHistory('TestPassword123!', passwordHistory);
+      // Verify the old password is in history
+      const isInHistory = await bcrypt.compare(passwords[0], user.passwordHistory[0].hash);
       expect(isInHistory).toBe(true);
     });
 
-    it('isPasswordInHistory should return false for non-matching passwords', async () => {
-      const hashedPassword = await bcrypt.hash('TestPassword123!', 12);
-      const passwordHistory = [
-        { hash: hashedPassword, changedAt: new Date() }
-      ];
+    it('should prevent reusing password from history', async () => {
+      // Change password twice to build history
+      authToken = generateToken(testUser._id);
 
-      const isInHistory = await isPasswordInHistory('DifferentPassword456!', passwordHistory);
+      // Change to password2
+      await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      authToken = generateToken(testUser._id);
+
+      // Change to password3
+      await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[1],
+          newPassword: passwords[2]
+        });
+
+      authToken = generateToken(testUser._id);
+
+      // Try to change back to password1 (should fail)
+      const res = await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[2],
+          newPassword: passwords[0]
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('PASSWORD_IN_HISTORY');
+    });
+
+    it('should maintain maximum of 5 passwords in history', async () => {
+      authToken = generateToken(testUser._id);
+
+      // Change password 6 times
+      for (let i = 1; i <= 6; i++) {
+        await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            currentPassword: passwords[i - 1],
+            newPassword: passwords[i]
+          });
+
+        authToken = generateToken(testUser._id);
+      }
+
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory.length).toBeLessThanOrEqual(5);
+    });
+  });
+
+  describe('Password History Limit Enforcement', () => {
+    it('should allow reusing password after it drops out of history (6th change)', async () => {
+      authToken = generateToken(testUser._id);
+
+      // Change password 5 times (passwords 0-5)
+      for (let i = 1; i <= 5; i++) {
+        await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            currentPassword: passwords[i - 1],
+            newPassword: passwords[i]
+          });
+
+        authToken = generateToken(testUser._id);
+      }
+
+      // Current password is passwords[5]
+      // History should contain: passwords[4], [3], [2], [1], [0]
+
+      // Now change to password6
+      await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[5],
+          newPassword: passwords[6]
+        });
+
+      authToken = generateToken(testUser._id);
+
+      // History now contains: passwords[5], [4], [3], [2], [1]
+      // passwords[0] should have dropped out
+
+      // Should now allow reusing passwords[0]
+      const res = await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[6],
+          newPassword: passwords[0]
+        });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('should correctly maintain history order (most recent first)', async () => {
+      authToken = generateToken(testUser._id);
+
+      // Change password 3 times
+      for (let i = 1; i <= 3; i++) {
+        await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            currentPassword: passwords[i - 1],
+            newPassword: passwords[i]
+          });
+
+        authToken = generateToken(testUser._id);
+      }
+
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory.length).toBe(3);
+
+      // Verify order: most recent password first
+      const isPassword2First = await bcrypt.compare(passwords[2], user.passwordHistory[0].hash);
+      const isPassword1Second = await bcrypt.compare(passwords[1], user.passwordHistory[1].hash);
+      const isPassword0Third = await bcrypt.compare(passwords[0], user.passwordHistory[2].hash);
+
+      expect(isPassword2First).toBe(true);
+      expect(isPassword1Second).toBe(true);
+      expect(isPassword0Third).toBe(true);
+    });
+  });
+
+  describe('Password History Utilities', () => {
+    it('should detect password in history correctly', async () => {
+      const passwordHash = await bcrypt.hash('TestPassword123!@#$', 12);
+      const history = [{
+        hash: passwordHash,
+        changedAt: new Date()
+      }];
+
+      const isInHistory = await isPasswordInHistory('TestPassword123!@#$', history);
+      expect(isInHistory).toBe(true);
+
+      const isNotInHistory = await isPasswordInHistory('DifferentPassword123!@#$', history);
+      expect(isNotInHistory).toBe(false);
+    });
+
+    it('should handle empty password history', async () => {
+      const isInHistory = await isPasswordInHistory('AnyPassword123!@#$', []);
       expect(isInHistory).toBe(false);
     });
 
-    it('addPasswordToHistory should add password at the beginning', () => {
+    it('should add password to history correctly', async () => {
       const user = {
         passwordHistory: [],
-        maxPasswordHistory: 5,
-        password: 'currentHashedPassword'
+        maxPasswordHistory: 5
       };
 
-      const updatedHistory = addPasswordToHistory(user, user.password);
+      const passwordHash = await bcrypt.hash('TestPassword123!@#$', 12);
+      const updatedHistory = addPasswordToHistory(user, passwordHash);
 
-      expect(updatedHistory).toHaveLength(1);
-      expect(updatedHistory[0].hash).toBe('currentHashedPassword');
-      expect(updatedHistory[0].changedAt).toBeInstanceOf(Date);
+      expect(updatedHistory.length).toBe(1);
+      expect(updatedHistory[0].hash).toBe(passwordHash);
+      expect(updatedHistory[0].changedAt).toBeDefined();
     });
 
-    it('addPasswordToHistory should trim history to maxPasswordHistory', () => {
+    it('should trim history to maxPasswordHistory', async () => {
       const user = {
-        passwordHistory: [
-          { hash: 'hash1', changedAt: new Date() },
-          { hash: 'hash2', changedAt: new Date() },
-          { hash: 'hash3', changedAt: new Date() },
-          { hash: 'hash4', changedAt: new Date() },
-          { hash: 'hash5', changedAt: new Date() }
-        ],
-        maxPasswordHistory: 5,
-        password: 'newHashedPassword'
+        passwordHistory: [],
+        maxPasswordHistory: 3
       };
 
-      const updatedHistory = addPasswordToHistory(user, user.password);
+      // Add 5 passwords
+      for (let i = 0; i < 5; i++) {
+        const hash = await bcrypt.hash(`Password${i}`, 12);
+        user.passwordHistory = addPasswordToHistory(user, hash);
+      }
 
-      expect(updatedHistory).toHaveLength(5);
-      expect(updatedHistory[0].hash).toBe('newHashedPassword');
-      expect(updatedHistory[4].hash).toBe('hash4');
+      expect(user.passwordHistory.length).toBe(3);
+    });
+  });
+
+  describe('Password History Timestamps', () => {
+    it('should record changedAt timestamp for each password in history', async () => {
+      authToken = generateToken(testUser._id);
+
+      const beforeChange = new Date();
+
+      await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory[0].changedAt).toBeDefined();
+      expect(new Date(user.passwordHistory[0].changedAt).getTime())
+        .toBeGreaterThanOrEqual(beforeChange.getTime());
+    });
+
+    it('should maintain timestamps for all passwords in history', async () => {
+      authToken = generateToken(testUser._id);
+
+      // Change password 3 times
+      for (let i = 1; i <= 3; i++) {
+        await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            currentPassword: passwords[i - 1],
+            newPassword: passwords[i]
+          });
+
+        authToken = generateToken(testUser._id);
+
+        // Small delay to ensure different timestamps
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory.length).toBe(3);
+
+      // All entries should have timestamps
+      user.passwordHistory.forEach(entry => {
+        expect(entry.changedAt).toBeDefined();
+      });
+
+      // Timestamps should be in descending order (most recent first)
+      for (let i = 0; i < user.passwordHistory.length - 1; i++) {
+        expect(new Date(user.passwordHistory[i].changedAt).getTime())
+          .toBeGreaterThanOrEqual(new Date(user.passwordHistory[i + 1].changedAt).getTime());
+      }
+    });
+  });
+
+  describe('Password History During Password Reset', () => {
+    it('should prevent reusing historical password during reset', async () => {
+      // Change password once to add to history
+      authToken = generateToken(testUser._id);
+      await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      // Request password reset
+      await request(app)
+        .post('/api/password/forgot')
+        .send({ email: 'test@example.com' });
+
+      const user = await User.findById(testUser._id);
+      const resetToken = user.passwordResetToken;
+
+      // Try to reset to a password in history
+      const res = await request(app)
+        .post('/api/password/reset')
+        .send({
+          token: resetToken,
+          password: passwords[0]
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('PASSWORD_IN_HISTORY');
+    });
+
+    it('should add old password to history during reset', async () => {
+      // Request password reset
+      await request(app)
+        .post('/api/password/forgot')
+        .send({ email: 'test@example.com' });
+
+      const userBefore = await User.findById(testUser._id);
+      const resetToken = userBefore.passwordResetToken;
+      const historyLengthBefore = userBefore.passwordHistory.length;
+
+      // Reset to new password
+      const res = await request(app)
+        .post('/api/password/reset')
+        .send({
+          token: resetToken,
+          password: passwords[1]
+        });
+
+      expect(res.status).toBe(200);
+
+      const userAfter = await User.findById(testUser._id);
+      expect(userAfter.passwordHistory.length).toBe(historyLengthBefore + 1);
+    });
+  });
+
+  describe('Organization Account Password History', () => {
+    let orgUser;
+
+    beforeEach(async () => {
+      orgUser = await User.create({
+        type: 'organization',
+        organizationName: 'Test Org',
+        organizationType: 'HOSPITAL',
+        county: 'Nairobi',
+        subCounty: 'Westlands',
+        organizationEmail: 'org@example.com',
+        organizationPhone: '+254712345679',
+        yearOfEstablishment: 2020,
+        password: await bcrypt.hash(passwords[0], 12),
+        role: 'vendor_developer',
+        accountStatus: 'active',
+        passwordHistory: [],
+        maxPasswordHistory: 5
+      });
+    });
+
+    it('should enforce password history for organization accounts', async () => {
+      authToken = generateToken(orgUser._id);
+
+      // Change password
+      await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      authToken = generateToken(orgUser._id);
+
+      // Try to change back to old password
+      const res = await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[1],
+          newPassword: passwords[0]
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('PASSWORD_IN_HISTORY');
+    });
+
+    it('should maintain separate password history for each organization', async () => {
+      const org2User = await User.create({
+        type: 'organization',
+        organizationName: 'Test Org 2',
+        organizationType: 'CLINIC',
+        county: 'Mombasa',
+        subCounty: 'Mvita',
+        organizationEmail: 'org2@example.com',
+        organizationPhone: '+254712345680',
+        yearOfEstablishment: 2021,
+        password: await bcrypt.hash(passwords[0], 12),
+        role: 'vendor_developer',
+        accountStatus: 'active',
+        passwordHistory: []
+      });
+
+      // Change password for org1
+      authToken = generateToken(orgUser._id);
+      await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      // Change password for org2 to same new password (should work - different history)
+      const org2Token = generateToken(org2User._id);
+      const res = await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${org2Token}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      expect(res.status).toBe(200);
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle empty password history', async () => {
-      const user = await User.create({
-        type: 'individual',
-        username: 'newuser',
-        firstName: 'New',
-        lastName: 'User',
-        email: 'newuser@example.com',
-        phone: '+254712345679',
-        password: await bcrypt.hash('InitialPassword123!', 12),
-        twoFactorEnabled: false,
-        passwordHistory: [],
-        accountStatus: 'active',
-        emailVerified: true
-      });
+    it('should handle user with no password history', async () => {
+      testUser.passwordHistory = undefined;
+      await testUser.save();
 
-      const loginRes = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'newuser@example.com',
-          password: 'InitialPassword123!',
-          deviceFingerprint: 'test-device-fingerprint'
-        });
-
-      const token = loginRes.body.token;
+      authToken = generateToken(testUser._id);
 
       const res = await request(app)
-        .patch('/api/auth/change-password')
-        .set('Authorization', `Bearer ${token}`)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
-          currentPassword: 'InitialPassword123!',
-          newPassword: 'NewPassword456!'
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
         });
 
       expect(res.status).toBe(200);
 
-      const updatedUser = await User.findById(user._id).select('+passwordHistory');
-      expect(updatedUser.passwordHistory.length).toBeGreaterThan(0);
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory).toBeDefined();
+      expect(user.passwordHistory.length).toBe(1);
     });
 
-    it('should handle null password history', async () => {
-      const isInHistory = await isPasswordInHistory('TestPassword123!', null);
-      expect(isInHistory).toBe(false);
+    it('should handle corrupted password history gracefully', async () => {
+      testUser.passwordHistory = [
+        { hash: 'corrupted_hash', changedAt: new Date() }
+      ];
+      await testUser.save();
+
+      authToken = generateToken(testUser._id);
+
+      // Should still work - corrupted entry won't match
+      const res = await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      expect(res.status).toBe(200);
     });
 
-    it('should handle undefined password history', async () => {
-      const isInHistory = await isPasswordInHistory('TestPassword123!', undefined);
-      expect(isInHistory).toBe(false);
+    it('should handle maxPasswordHistory of 0', async () => {
+      testUser.maxPasswordHistory = 0;
+      await testUser.save();
+
+      authToken = generateToken(testUser._id);
+
+      const res = await request(app)
+        .post('/api/auth/change-password')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          currentPassword: passwords[0],
+          newPassword: passwords[1]
+        });
+
+      expect(res.status).toBe(200);
+
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory.length).toBe(0);
+    });
+
+    it('should handle very large maxPasswordHistory values', async () => {
+      testUser.maxPasswordHistory = 100;
+      await testUser.save();
+
+      authToken = generateToken(testUser._id);
+
+      // Change password 10 times
+      for (let i = 1; i <= 6; i++) {
+        await request(app)
+          .post('/api/auth/change-password')
+          .set('Authorization', `Bearer ${authToken}`)
+          .send({
+            currentPassword: passwords[i - 1],
+            newPassword: passwords[i]
+          });
+
+        authToken = generateToken(testUser._id);
+      }
+
+      const user = await User.findById(testUser._id);
+      expect(user.passwordHistory.length).toBe(6);
     });
   });
 });

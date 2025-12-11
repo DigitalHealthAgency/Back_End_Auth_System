@@ -1,4 +1,4 @@
-// ✅ DHA RBAC PERMISSION MIDDLEWARE
+//  DHA RBAC PERMISSION MIDDLEWARE
 // FR-RBAC-002: Permission checking and enforcement
 // Replaces legacy adminOnly, staffOnly, hasRole functions
 

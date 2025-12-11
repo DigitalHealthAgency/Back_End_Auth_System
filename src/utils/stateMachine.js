@@ -1,4 +1,4 @@
-// ✅ DHA USER STATE MACHINE
+//  DHA USER STATE MACHINE
 // FR-USER-LIFECYCLE-001: State transition validation
 // Enforces valid state transitions and prevents invalid state changes
 
@@ -47,6 +47,7 @@ const STATE_TRANSITIONS = {
   [USER_STATES.PENDING_VERIFICATION]: [
     USER_STATES.ACTIVE,                  // Email verified → active
     USER_STATES.PENDING_SETUP,           // Needs password setup
+    USER_STATES.SUSPENDED,               // Account suspended (e.g., failed login attempts)
     USER_STATES.CANCELLED,               // User cancels registration
     USER_STATES.TERMINATED               // Admin terminates unverified account
   ],
@@ -62,6 +63,7 @@ const STATE_TRANSITIONS = {
   // FROM: pending_setup
   [USER_STATES.PENDING_SETUP]: [
     USER_STATES.ACTIVE,                  // Password setup completed
+    USER_STATES.SUSPENDED,               // Account suspended (e.g., failed login attempts)
     USER_STATES.CANCELLED,               // User cancels
     USER_STATES.TERMINATED               // Admin terminates
   ],

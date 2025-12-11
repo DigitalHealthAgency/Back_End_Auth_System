@@ -7,11 +7,11 @@ const { createCronErrorEmail } = require('../utils/emailTemplates');
 module.exports = function safeCron(jobName, task) {
   return async () => {
     try {
-      console.log(`⏰ [${jobName}] Starting...`);
+      console.log(` [${jobName}] Starting...`);
       await task();
-      console.log(`✅ [${jobName}] Completed successfully.`);
+      console.log(` [${jobName}] Completed successfully.`);
     } catch (err) {
-      console.error(`❌ [${jobName}] Failed:`, err);
+      console.error(` [${jobName}] Failed:`, err);
       
       // Send email notification to admin users
       try {
@@ -31,11 +31,11 @@ module.exports = function safeCron(jobName, task) {
             console.log(`📩 Error notification sent to admin: ${admin.email}`);
           }
         } else {
-          console.log('⚠️ No admin users found to send error notification');
+          console.log(' No admin users found to send error notification');
         }
       } catch (emailErr) {
         // If email sending fails, log this separately to avoid supressing the original error
-        console.error('❌ Failed to send error notification email:', emailErr);
+        console.error(' Failed to send error notification email:', emailErr);
       }
     }
   };

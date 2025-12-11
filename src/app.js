@@ -13,6 +13,8 @@ const teamRoutes = require('./routes/teamRoutes');
 const suspensionAppealRoutes = require('./routes/suspensionAppealRoutes');
 const securityAdminRoutes = require('./routes/admin/securityAdminRoutes');
 const adminUsersRoutes = require('./routes/admin/adminUsersRoutes');
+const adminSecurityRoutes = require('./routes/admin/adminSecurityRoutes');
+const dashboardRoutes = require('./routes/admin/dashboardRoutes');
 const vendorRoutes = require('./routes/vendor/vendorRoutes');
 const {
   checkIPSecurity,
@@ -23,6 +25,8 @@ const {
 const recoveryRoutes = require('./routes/recoveryRoutes');
 const twoFactorRoutes = require('./routes/twoFactorRoutes');
 const { router: cronRoutes, setCronManager } = require('./routes/cronRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
+const testRoutes = require('./routes/testRoutes');
 
 // Initialize cron manager
 const CronManager = require('./jobs/cronManager');
@@ -34,7 +38,17 @@ const app = express();
 // Enable CORS for frontend to send cookies
 const cors = require('cors');
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:8000', 'http://localhost:3000', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:8000',
+    'http://localhost:3000',
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://localhost:8082',
+    'http://192.168.1.102:8080',  // Mobile/Network access
+    'http://192.168.1.102:5173',  // Frontend on network
+    /^http:\/\/192\.168\.1\.\d+:\d+$/  // Allow any 192.168.1.x IP with any port
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
@@ -43,6 +57,10 @@ app.use(cors({
 
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
+
+// XSS sanitization middleware
+const sanitizeInput = require('./middleware/sanitize');
+app.use(sanitizeInput);
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -96,19 +114,31 @@ app.use('/api/appeals', suspensionAppealRoutes);
 app.use('/recovery', recoveryRoutes);
 
 // Two-factor authentication routes
-app.use('/api/two-factor', twoFactorRoutes);
+app.use('/api/2fa', twoFactorRoutes);
 
 // Cron job management routes
 app.use('/api/cron', cronRoutes);
 
-// Admin security routes
+// Admin security routes (old)
 app.use('/api/admin/security', securityAdminRoutes);
+
+// Admin security routes (new - stats and monitoring)
+app.use('/api/admin/security', adminSecurityRoutes);
 
 // Admin users routes
 app.use('/api/admin/users', adminUsersRoutes);
 
+// Admin dashboard routes
+app.use('/api/admin/dashboard', dashboardRoutes);
+
 // Vendor routes
 app.use('/api/vendor', vendorRoutes);
+
+// Application routes (for separation of duties tests)
+app.use('/api/applications', applicationRoutes);
+
+// Test routes (for separation of duties tests)
+app.use('/api/tests', testRoutes);
 
 // Set the cron manager instance for the routes
 setCronManager(cronManager);

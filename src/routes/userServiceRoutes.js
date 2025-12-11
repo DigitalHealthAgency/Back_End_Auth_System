@@ -1,8 +1,49 @@
 const express = require('express');
 const User = require('../models/User');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const bcrypt = require('bcryptjs');
+const protect = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+/**
+ * @route POST /api/users
+ * @desc Create new user (admin only)
+ * @access Admin
+ */
+router.post('/', protect, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'dha_system_administrator') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin access required'
+      });
+    }
+
+    const userData = req.body;
+
+    // Hash password
+    if (userData.password) {
+      userData.password = await bcrypt.hash(userData.password, 12);
+    }
+
+    const user = await User.create(userData);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        _id: user._id,
+        email: user.email || user.organizationEmail,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
 
 /**
  * @route GET /api/users/:id

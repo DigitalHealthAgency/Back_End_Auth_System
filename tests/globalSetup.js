@@ -1,8 +1,11 @@
-// ✅ GLOBAL SETUP - Runs once before all tests
+//  GLOBAL SETUP - Runs once before all tests
 
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 module.exports = async () => {
+  // Set NODE_ENV to test
+  process.env.NODE_ENV = 'test';
+
   // Start in-memory MongoDB for testing
   const mongod = await MongoMemoryServer.create({
     instance: {
@@ -16,6 +19,6 @@ module.exports = async () => {
   global.__MONGOD__ = mongod;
   process.env.MONGO_URI_TEST = uri;
 
-  console.log('\n🚀 Global Test Setup Complete');
+  console.log('\n Global Test Setup Complete');
   console.log(`📦 MongoDB Memory Server started at: ${uri}\n`);
 };

@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 // Password complexity: min 12 chars (SRS Requirement), upper, lower, number, special
 const passwordComplexity = Joi.string()
-  .min(12)  // ✅ FIXED: Changed from 8 to 12 characters (SRS Compliance)
+  .min(12)  //  FIXED: Changed from 8 to 12 characters (SRS Compliance)
   .max(64)
   .pattern(/[A-Z]/, 'uppercase')
   .pattern(/[a-z]/, 'lowercase')
@@ -17,11 +17,25 @@ const passwordComplexity = Joi.string()
 
 const phoneRegex = /^(\+254|0)[17]\d{8}$/; // Kenyan mobile format
 
+// Custom validator to reject null bytes
+const noNullBytes = (value, helpers) => {
+  if (value && (typeof value === 'string') && value.includes('\x00')) {
+    return helpers.error('any.invalid', { message: 'Invalid characters detected' });
+  }
+  return value;
+};
+
 const individualSchema = Joi.object({
   type: Joi.string().valid('individual').required(),
-  username: Joi.string().alphanum().min(3).max(32).required(),
-  firstName: Joi.string().max(64).required(),
-  lastName: Joi.string().max(64).required(),
+  username: Joi.string().alphanum().min(3).max(32).custom(noNullBytes).required().messages({
+    'string.nullByte': 'Invalid characters detected'
+  }),
+  firstName: Joi.string().max(64).custom(noNullBytes).required().messages({
+    'string.nullByte': 'Invalid characters detected'
+  }),
+  lastName: Joi.string().max(64).custom(noNullBytes).required().messages({
+    'string.nullByte': 'Invalid characters detected'
+  }),
   email: Joi.string().email({ tlds: { allow: false } }).required(),
   phone: Joi.string().pattern(phoneRegex).required().messages({
     'string.pattern.base': 'Phone must be a valid Kenyan mobile number'
@@ -56,13 +70,20 @@ const organizationSchema = Joi.object({
   captchaToken: Joi.string().optional()
 });
 
-const registerSchema = Joi.alternatives().try(individualSchema, organizationSchema);
+// Use Joi alternatives to validate based on registration type
+const registerSchema = Joi.alternatives().try(
+  individualSchema,
+  organizationSchema
+);
 
 const loginSchema = Joi.object({
-  identifier: Joi.string().max(128).required(),
+  login: Joi.string().max(128).optional(),
+  identifier: Joi.string().max(128).optional(),
   password: Joi.string().min(8).max(64).required(),
-  twoFactorCode: Joi.string().length(6).pattern(/^\d+$/).optional()
-});
+  twoFactorCode: Joi.string().length(6).pattern(/^\d+$/).optional(),
+  captchaToken: Joi.string().optional(),
+  recaptchaToken: Joi.string().optional()
+}).or('login', 'identifier');
 
 const changePasswordSchema = Joi.object({
   currentPassword: Joi.string().min(8).max(64).required(),
@@ -198,6 +219,8 @@ const createBoardMemberUserSchema = Joi.object({
 
 module.exports = {
   registerSchema,
+  individualSchema,
+  organizationSchema,
   loginSchema,
   changePasswordSchema,
   updateProfileSchema,

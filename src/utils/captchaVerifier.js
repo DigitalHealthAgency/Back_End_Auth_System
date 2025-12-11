@@ -1,4 +1,4 @@
-// ✅ CRITICAL SECURITY FIX: CAPTCHA Verification
+//  CRITICAL SECURITY FIX: CAPTCHA Verification
 // SRS Requirements: FR-SEC-001 (Failed Login Handling)
 // Required after 3 failed login attempts
 
@@ -14,10 +14,10 @@ const verifyRecaptcha = async (token, remoteip = null) => {
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
   if (!secretKey) {
-    console.error('⚠️ RECAPTCHA_SECRET_KEY not configured');
+    console.error(' RECAPTCHA_SECRET_KEY not configured');
     // In development, allow bypass if not configured
     if (process.env.NODE_ENV === 'development') {
-      console.warn('⚠️ CAPTCHA bypassed in development mode');
+      console.warn(' CAPTCHA bypassed in development mode');
       return { success: true, score: 1.0, bypassed: true };
     }
     return {
@@ -62,7 +62,7 @@ const verifyRecaptcha = async (token, remoteip = null) => {
       return {
         success: false,
         errors: data['error-codes'] || ['CAPTCHA verification failed'],
-        code: 'CAPTCHA_VERIFICATION_FAILED'
+        code: 'CAPTCHA_INVALID'
       };
     }
 
@@ -91,6 +91,16 @@ const verifyRecaptcha = async (token, remoteip = null) => {
 
   } catch (error) {
     console.error('CAPTCHA verification error:', error.message);
+
+    // Handle timeout errors
+    if (error.code === 'ECONNABORTED') {
+      return {
+        success: false,
+        errors: ['CAPTCHA verification timeout'],
+        code: 'CAPTCHA_TIMEOUT',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      };
+    }
 
     return {
       success: false,

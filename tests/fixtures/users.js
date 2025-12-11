@@ -1,4 +1,4 @@
-// ✅ USER TEST FIXTURES
+//  USER TEST FIXTURES
 
 const bcrypt = require('bcryptjs');
 
@@ -42,12 +42,12 @@ const invalidUser = {
 };
 
 /**
- * User with weak password
+ * User with weak password (meets length but fails complexity)
  */
 const userWithWeakPassword = {
   ...validIndividualUser,
   email: 'weakpassword@example.com',
-  password: 'weak' // Too short
+  password: 'weakpassword123' // 15 chars but lacks uppercase and special char
 };
 
 /**

@@ -1,4 +1,4 @@
-// ✅ DHA RBAC ROLE MIGRATION SCRIPT
+//  DHA RBAC ROLE MIGRATION SCRIPT
 // Migrates users from old role system to new 9-role DHA RBAC system
 // Run with: node scripts/migrateRoles.js
 
@@ -119,7 +119,7 @@ async function migrateRoles() {
   try {
     // Connect to database
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/huduma-hub');
-    console.log('✅ Connected to MongoDB\n');
+    console.log(' Connected to MongoDB\n');
 
     // Get all users
     const users = await User.find({});
@@ -166,9 +166,9 @@ async function migrateRoles() {
             confidence: migration.confidence,
             reason: migration.reason
           });
-          console.log(`  ⚠️  NEEDS MANUAL REVIEW\n`);
+          console.log(`    NEEDS MANUAL REVIEW\n`);
         } else {
-          console.log(`  ✅ Migrated\n`);
+          console.log(`   Migrated\n`);
         }
 
         // Update user role
@@ -181,7 +181,7 @@ async function migrateRoles() {
         stats.migrated++;
 
       } catch (userError) {
-        console.error(`  ❌ Error migrating user:`, userError.message, '\n');
+        console.error(`   Error migrating user:`, userError.message, '\n');
         stats.errors++;
       }
     }
@@ -234,7 +234,7 @@ async function migrateRoles() {
     }
 
     console.log('='.repeat(80));
-    console.log('✅ MIGRATION COMPLETE');
+    console.log(' MIGRATION COMPLETE');
     console.log('='.repeat(80));
     console.log();
 
@@ -250,7 +250,7 @@ async function migrateRoles() {
     process.exit(0);
 
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error(' Migration failed:', error);
     await mongoose.connection.close();
     process.exit(1);
   }
@@ -262,17 +262,17 @@ async function migrateRoles() {
 async function rollbackMigration() {
   console.log('='.repeat(80));
   console.log('ROLLING BACK ROLE MIGRATION');
-  console.log('⚠️  WARNING: This will attempt to restore old roles');
+  console.log('  WARNING: This will attempt to restore old roles');
   console.log('='.repeat(80));
   console.log();
 
   try {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/huduma-hub');
-    console.log('✅ Connected to MongoDB\n');
+    console.log(' Connected to MongoDB\n');
 
     // This requires having saved old roles somewhere
     // For now, we'll just set everyone to 'user' as a safe default
-    console.log('⚠️  Rollback not fully implemented');
+    console.log('  Rollback not fully implemented');
     console.log('Manual intervention required to restore old roles');
     console.log('Consider restoring from database backup instead');
     console.log();
@@ -281,7 +281,7 @@ async function rollbackMigration() {
     process.exit(0);
 
   } catch (error) {
-    console.error('❌ Rollback failed:', error);
+    console.error(' Rollback failed:', error);
     await mongoose.connection.close();
     process.exit(1);
   }
@@ -298,7 +298,7 @@ async function previewMigration() {
 
   try {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/huduma-hub');
-    console.log('✅ Connected to MongoDB\n');
+    console.log(' Connected to MongoDB\n');
 
     const users = await User.find({});
     console.log(`Found ${users.length} users\n`);
@@ -345,7 +345,7 @@ async function previewMigration() {
     process.exit(0);
 
   } catch (error) {
-    console.error('❌ Preview failed:', error);
+    console.error(' Preview failed:', error);
     await mongoose.connection.close();
     process.exit(1);
   }

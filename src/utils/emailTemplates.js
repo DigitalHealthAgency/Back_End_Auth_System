@@ -170,7 +170,7 @@ const createWelcomeEmail = (user, plainKey) => {
           color: #065f46;
         }
         .steps-list li:before {
-          content: "✓";
+          content: "";
           position: absolute;
           left: 0;
           color: #10b981;
@@ -254,7 +254,7 @@ const createWelcomeEmail = (user, plainKey) => {
         </div>
         
         <div class="content">
-          <div class="welcome-badge">🎉 Welcome to Kenya DHA</div>
+          <div class="welcome-badge"> Welcome to Kenya DHA</div>
           <h1>Your Digital Health Certification Journey Begins Now!</h1>
           
           <p class="user-greeting">Hello <strong>${user.name || user.organizationName || user.firstName || 'User'}</strong>,</p>
@@ -265,7 +265,7 @@ const createWelcomeEmail = (user, plainKey) => {
           
           <div class="features-grid">
             <div class="feature-item">
-              <div class="feature-icon">📋</div>
+              <div class="feature-icon"></div>
               <div class="feature-title">Digital Health Certification</div>
               <div class="feature-desc">Official certification for digital health applications and systems</div>
             </div>
@@ -275,21 +275,21 @@ const createWelcomeEmail = (user, plainKey) => {
               <div class="feature-desc">Ensure your digital health solutions meet national standards and regulations</div>
             </div>
             <div class="feature-item">
-              <div class="feature-icon">👥</div>
+              <div class="feature-icon"></div>
               <div class="feature-title">Application Registry</div>
               <div class="feature-desc">Public registry of certified digital health solutions in Kenya</div>
             </div>
             <div class="feature-item">
-              <div class="feature-icon">📊</div>
+              <div class="feature-icon"></div>
               <div class="feature-title">Testing & Validation</div>
               <div class="feature-desc">Comprehensive testing and validation of your health IT systems</div>
             </div>
           </div>
           
           <div class="key-container">
-            <p class="key-title">🔐 Your Account Recovery Key</p>
+            <p class="key-title"> Your Account Recovery Key</p>
             <div class="key">${plainKey}</div>
-            <p class="key-warning">⚠️ IMPORTANT: Store this key securely! You'll need it to recover your account if you lose access.</p>
+            <p class="key-warning"> IMPORTANT: Store this key securely! You'll need it to recover your account if you lose access.</p>
           </div>
           
           <div style="text-align: center;">
@@ -297,7 +297,7 @@ const createWelcomeEmail = (user, plainKey) => {
           </div>
           
           <div class="next-steps">
-            <h3>🚀 Get Started in 3 Easy Steps:</h3>
+            <h3> Get Started in 3 Easy Steps:</h3>
             <ul class="steps-list">
               <li>Complete your profile and set up two-factor authentication for security</li>
               <li>Submit your digital health application for certification review</li>
@@ -313,11 +313,11 @@ const createWelcomeEmail = (user, plainKey) => {
             
             <div class="contact-info">
               <div class="contact-item">
-                <strong>📧 Email Support</strong><br>
+                <strong> Email Support</strong><br>
                 <a href="mailto:${process.env.SUPPORT_EMAIL || 'support@dha.go.ke'}" style="color: #3b82f6;">${process.env.SUPPORT_EMAIL || 'support@dha.go.ke'}</a>
               </div>
               <div class="contact-item">
-                <strong>💬 Live Chat</strong><br>
+                <strong> Live Chat</strong><br>
                 Available in your dashboard
               </div>
               <div class="contact-item">
@@ -328,7 +328,7 @@ const createWelcomeEmail = (user, plainKey) => {
           </div>
           
           <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #3b82f6;">
-            <p style="margin: 0; color: #1e40af; font-weight: 600;">🎯 Join Kenya's digital health transformation initiative</p>
+            <p style="margin: 0; color: #1e40af; font-weight: 600;"> Join Kenya's digital health transformation initiative</p>
             <p style="margin: 10px 0 0 0; color: #1e3a8a; font-size: 14px;">Together, we're ensuring safe, effective digital health solutions for all Kenyans.</p>
           </div>
         </div>
@@ -447,7 +447,7 @@ const createWelcomeEmail = (user, plainKey) => {
           <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
-          <div class="alert-icon">🔐</div>
+          <div class="alert-icon"></div>
           <h1>New Login Detected</h1>
           <p>Hi <strong>${user.name}</strong>,</p>
           <p>We detected a new login to your Kenya Digital Health Agency account. If this was you, no action is needed.</p>
@@ -691,7 +691,7 @@ const createWelcomeEmail = (user, plainKey) => {
           <img src="https://res.cloudinary.com/dqmo5qzze/image/upload/v1764836671/dha/dha-logo.png" alt="Kenya DHA Logo">
         </div>
         <div class="content">
-          <h1>⚠️ Cron Job Error Alert</h1>
+          <h1> Cron Job Error Alert</h1>
           <p>A scheduled task has encountered an error and failed to complete:</p>
           
           <div class="error-container">
@@ -1144,7 +1144,7 @@ const createWelcomeEmail = (user, plainKey) => {
       <body>
           <div class="container">
               <div class="header">
-                  <h1>🔐 Password Changed</h1>
+                  <h1> Password Changed</h1>
                   <p style="margin: 10px 0 0 0; font-size: 14px;">Kenya Digital Health Agency</p>
               </div>
               <div class="content">
@@ -1160,7 +1160,7 @@ const createWelcomeEmail = (user, plainKey) => {
                   </div>
 
                   <div class="alert-box">
-                      <h3 style="margin-top: 0;">⚠️ Didn't make this change?</h3>
+                      <h3 style="margin-top: 0;"> Didn't make this change?</h3>
                       <p>If you did not change your password, your account may have been compromised. Please:</p>
                       <ul>
                           <li>Reset your password immediately</li>

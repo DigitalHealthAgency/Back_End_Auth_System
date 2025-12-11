@@ -39,16 +39,24 @@ const generateRecoveryPDF = async ({ name, email, recoveryKey }) => {
   });
   
   try {
-    // Add logo (smaller size)
-    const logoUrl = 'https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/prezio-logo_d86yas.png';
-    const logoResponse = await axios.get(logoUrl, { responseType: 'arraybuffer' });
-    const logoBuffer = Buffer.from(logoResponse.data);
-    
-    // Add logo to the top center with reduced size
-    doc.image(logoBuffer, (doc.page.width - 150) / 2, 40, { width: 150 });
+    // Add logo (smaller size) - skip in test environment if fetch fails
+    let logoAddedSuccessfully = false;
+    if (process.env.NODE_ENV !== 'test') {
+      try {
+        const logoUrl = 'https://res.cloudinary.com/dqmo5qzze/image/upload/v1745590700/prezio-logo_d86yas.png';
+        const logoResponse = await axios.get(logoUrl, { responseType: 'arraybuffer', timeout: 5000 });
+        const logoBuffer = Buffer.from(logoResponse.data);
 
-    // Add document title (moved up)
-    doc.moveDown(3);
+        // Add logo to the top center with reduced size
+        doc.image(logoBuffer, (doc.page.width - 150) / 2, 40, { width: 150 });
+        logoAddedSuccessfully = true;
+      } catch (logoError) {
+        console.warn('Failed to fetch logo for PDF, continuing without it:', logoError.message);
+      }
+    }
+
+    // Add document title (moved up) - adjust spacing based on whether logo was added
+    doc.moveDown(logoAddedSuccessfully ? 3 : 1);
     doc.font('Helvetica-Bold').fontSize(24).text('', { align: 'center' });
     
     // Add horizontal line

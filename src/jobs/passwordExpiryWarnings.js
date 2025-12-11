@@ -1,4 +1,4 @@
-// ✅ CRITICAL SECURITY FIX: Password Expiry Warning Job
+//  CRITICAL SECURITY FIX: Password Expiry Warning Job
 // Sends email warnings at 30, 14, 7, and 1 day(s) before password expiry
 
 const cron = require('node-cron');
@@ -134,7 +134,7 @@ async function sendPasswordExpiryEmail(user, daysRemaining) {
   }
 
   const subject = daysRemaining === 1
-    ? '⚠️ URGENT: Your password expires tomorrow!'
+    ? ' URGENT: Your password expires tomorrow!'
     : `Password Expiry ${urgencyLevel}: ${daysRemaining} days remaining`;
 
   const html = `
@@ -168,14 +168,14 @@ async function sendPasswordExpiryEmail(user, daysRemaining) {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 Password Expiry ${urgencyLevel}</h1>
+          <h1> Password Expiry ${urgencyLevel}</h1>
         </div>
 
         <div class="content">
           <p>Hello ${userName},</p>
 
           <div class="warning-box">
-            <strong style="color: ${urgencyColor};">⚠️ Your password is expiring soon!</strong>
+            <strong style="color: ${urgencyColor};"> Your password is expiring soon!</strong>
           </div>
 
           <div class="days-remaining">
@@ -198,7 +198,7 @@ async function sendPasswordExpiryEmail(user, daysRemaining) {
 
           ${daysRemaining === 1 ? `
           <div style="background: #fee2e2; border: 2px solid #dc2626; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <strong style="color: #dc2626;">⚠️ URGENT ACTION REQUIRED</strong>
+            <strong style="color: #dc2626;"> URGENT ACTION REQUIRED</strong>
             <p style="margin: 10px 0 0 0; color: #991b1b;">
               Your password expires <strong>tomorrow</strong>. Please change it immediately to avoid account lockout.
             </p>
@@ -324,14 +324,14 @@ if (require.main === module) {
 
   mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/huduma-hub')
     .then(async () => {
-      console.log('✅ Connected to MongoDB');
+      console.log(' Connected to MongoDB');
       const result = await runPasswordExpiryWarningJobNow();
       console.log('Result:', result);
       await mongoose.connection.close();
       process.exit(0);
     })
     .catch((error) => {
-      console.error('❌ Database connection failed:', error);
+      console.error(' Database connection failed:', error);
       process.exit(1);
     });
 }

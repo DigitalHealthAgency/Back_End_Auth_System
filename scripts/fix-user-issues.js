@@ -39,7 +39,7 @@ async function fixUserIssues() {
 
     // Fix county if missing
     if (!user.county && user.subCounty) {
-      console.log('⚠️  County is missing but subCounty exists. Setting county based on subCounty...');
+      console.log('  County is missing but subCounty exists. Setting county based on subCounty...');
       // Funyula is in Busia County
       const countyMap = {
         'Funyula': 'Busia',
@@ -47,24 +47,24 @@ async function fixUserIssues() {
         'Rongai': 'Nakuru'
       };
       user.county = countyMap[user.subCounty] || 'Nairobi';
-      console.log(`✓ Set county to: ${user.county}`);
+      console.log(` Set county to: ${user.county}`);
       updated = true;
     }
 
     // Disable 2FA if enabled (temporary fix for login issues)
     if (user.twoFactorEnabled) {
-      console.log('⚠️  2FA is enabled. Disabling temporarily to fix login issues...');
+      console.log('  2FA is enabled. Disabling temporarily to fix login issues...');
       user.twoFactorEnabled = false;
       user.twoFactorSecret = undefined;
-      console.log('✓ Disabled 2FA');
+      console.log(' Disabled 2FA');
       updated = true;
     }
 
     if (updated) {
       await user.save();
-      console.log('\n✅ User updated successfully!');
+      console.log('\n User updated successfully!');
     } else {
-      console.log('\n✅ No updates needed.');
+      console.log('\n No updates needed.');
     }
 
     console.log('\nFinal user state:');

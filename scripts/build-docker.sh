@@ -74,7 +74,7 @@ if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}Error: Docker is not running${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Docker is running${NC}"
+echo -e "${GREEN} Docker is running${NC}"
 echo ""
 
 # Check if Dockerfile exists
@@ -97,7 +97,7 @@ docker build \
 
 if [ $? -eq 0 ]; then
     echo ""
-    echo -e "${GREEN}✓ Docker image built successfully${NC}"
+    echo -e "${GREEN} Docker image built successfully${NC}"
 else
     echo -e "${RED}✗ Docker build failed${NC}"
     exit 1
@@ -126,7 +126,7 @@ if [ "$PUSH" = true ]; then
     docker push "${IMAGE_NAME}:${VERSION}"
     
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Image pushed successfully${NC}"
+        echo -e "${GREEN} Image pushed successfully${NC}"
     else
         echo -e "${RED}✗ Failed to push image${NC}"
         exit 1

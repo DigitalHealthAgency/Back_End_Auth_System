@@ -1,5 +1,5 @@
 // src/middleware/rbac.js
-// 🔐 ROLE-BASED ACCESS CONTROL (RBAC) MIDDLEWARE
+//  ROLE-BASED ACCESS CONTROL (RBAC) MIDDLEWARE
 // Enforces permission-based access control for Kenya DHA Certification System
 
 const {

@@ -1,4 +1,4 @@
-// ✅ GLOBAL TEARDOWN - Runs once after all tests
+//  GLOBAL TEARDOWN - Runs once after all tests
 
 module.exports = async () => {
   // Stop MongoDB Memory Server
@@ -7,5 +7,5 @@ module.exports = async () => {
     console.log('\n🛑 MongoDB Memory Server stopped\n');
   }
 
-  console.log('✅ Global Test Teardown Complete\n');
+  console.log(' Global Test Teardown Complete\n');
 };

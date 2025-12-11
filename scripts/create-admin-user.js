@@ -60,7 +60,7 @@ async function createAdminUser() {
     });
 
     if (existingUser) {
-      console.error('\n❌ Error: User with this email or username already exists!');
+      console.error('\n Error: User with this email or username already exists!');
       process.exit(1);
     }
 
@@ -86,7 +86,7 @@ async function createAdminUser() {
     await user.save();
 
     console.log('\n' + '='.repeat(60));
-    console.log('✓ SUCCESS! Admin user created successfully!');
+    console.log(' SUCCESS! Admin user created successfully!');
     console.log('='.repeat(60));
     console.log('\nAdmin Details:');
     console.log(`  Name:     ${firstName} ${lastName}`);
@@ -99,7 +99,7 @@ async function createAdminUser() {
     console.log('='.repeat(60));
 
   } catch (error) {
-    console.error('\n❌ Error creating admin user:', error.message);
+    console.error('\n Error creating admin user:', error.message);
     process.exit(1);
   } finally {
     await mongoose.connection.close();

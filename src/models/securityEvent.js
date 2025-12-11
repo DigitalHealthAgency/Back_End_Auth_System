@@ -25,6 +25,7 @@ const securityEventSchema = new mongoose.Schema({
       'Registration Failed',
       'Registration Error',
       'High Risk Registration Blocked',
+      'High Risk Registration Attempt',
       'High Risk Request Blocked',
       'Suspicious Activity Detected',
       'Failed Login',
@@ -37,6 +38,9 @@ const securityEventSchema = new mongoose.Schema({
       'Password Change Error',
       'Password Expired Login Attempt',
       '2FA Required',
+      'Invalid 2FA Code',  
+      'Failed CAPTCHA Verification', 
+      'CAPTCHA Verification Failed', 
       'Recovery Key Generated',
       'Recovery Key Generation Error',
       'Account Termination Requested',
@@ -53,8 +57,9 @@ const securityEventSchema = new mongoose.Schema({
       'Multiple Failed Attempts',
       'Failed Attempts Reset',
       'Account Locked',
-      'Account Suspended',
+      'Account Suspended Due to Failed Logins',
       'Account Unlocked',
+      'Account Auto-Unlocked',
       'Admin Access',
       'Permission Escalation',
       'Data Export',
@@ -65,7 +70,19 @@ const securityEventSchema = new mongoose.Schema({
       'Profile Update Failed',
       'Suspended User Access Attempt',
       'Login Attempt on Suspended Account',
-      'Security Settings Changed'
+      'Login Attempt on Locked Account',
+      'Account Locked',
+      'Security Settings Changed',
+      // Admin security actions
+      'session_terminated_by_admin',
+      'ip_blocked',
+      'ip_unblocked',
+      'ip_whitelisted',
+      'ip_whitelist_removed',
+      'Brute Force Detected',
+      'Unusual Login Pattern',
+      'Session Hijack Attempt',
+      'Unauthorized Access Attempt'
     ]
   },
   severity: {
@@ -79,7 +96,8 @@ const securityEventSchema = new mongoose.Schema({
   },
   device: {
     type: String,
-    required: true
+    required: false,
+    default: 'Unknown'
   },
   location: {
     country: String,

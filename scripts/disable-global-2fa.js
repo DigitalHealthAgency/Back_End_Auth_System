@@ -33,12 +33,12 @@ async function disableGlobal2FA() {
     console.log();
 
     if (settings.require2FA) {
-      console.log('⚠️  Global 2FA is ENABLED. Disabling it now...');
+      console.log('  Global 2FA is ENABLED. Disabling it now...');
       settings.require2FA = false;
       await settings.save();
-      console.log('✅ Global 2FA disabled successfully!');
+      console.log(' Global 2FA disabled successfully!');
     } else {
-      console.log('✅ Global 2FA is already disabled.');
+      console.log(' Global 2FA is already disabled.');
     }
 
     console.log('\nFinal settings:');

@@ -1,0 +1,4528 @@
+
+> kenya-dha-auth@1.0.0 test
+> jest --runInBand --detectOpenHandles --verbose
+
+
+🚀 Global Test Setup Complete
+📦 MongoDB Memory Server started at: mongodb://127.0.0.1:50527/
+
+  console.log
+    [CronManager] Registered job 'userRegistrationNumberSync': Add registration numbers to organization users who don't have them
+
+      at CronManager.log [as registerJob] (src/jobs/cronManager.js:85:13)
+
+  console.log
+    [CronManager] Registered job 'userStatusSync': Synchronize user account statuses with registration statuses
+
+      at CronManager.log [as registerJob] (src/jobs/cronManager.js:85:13)
+
+  console.log
+    [CronManager] Registered job 'healthCheck': Perform system health checks
+
+      at CronManager.log [as registerJob] (src/jobs/cronManager.js:85:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user1@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user2@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user5@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user6@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user9@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user10@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user13@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user14@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user15@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user16@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user17@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user18@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user19@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user20@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user21@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user22@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user23@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user24@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user7@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user8@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user27@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user28@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user29@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user30@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user31@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user32@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user0@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user35@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user36@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user37@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user38@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user39@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user40@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user41@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user42@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user43@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user44@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user45@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user46@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user25@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user48@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user49@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user50@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user51@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user52@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user53@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user54@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user11@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user12@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user3@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user4@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user26@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user60@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user61@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user62@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user63@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user64@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user65@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user66@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user67@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user68@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user33@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user34@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user71@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user47@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user73@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user74@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user75@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user76@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user77@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user78@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user79@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user80@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user81@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user82@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user83@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user84@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user85@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user59@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user87@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user88@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user89@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user90@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user91@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user92@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user93@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user94@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user95@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user96@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user97@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user98@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user99@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user72@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user55@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user56@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user69@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user70@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user57@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user58@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'user86@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    Average login time: 609.31ms
+
+      at Object.log (tests/performance/load.test.js:69:15)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser0@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser1@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser2@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser3@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser4@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser5@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser6@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser7@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser8@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser9@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser10@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser11@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser12@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser13@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser14@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser15@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser16@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser17@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser18@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser19@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser20@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser21@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser22@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser23@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser24@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser25@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser26@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser27@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser28@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser29@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser30@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser31@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser32@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser35@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser36@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser37@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser38@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser39@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser40@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser41@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser42@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser45@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser46@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser47@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser48@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser49@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser33@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser43@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser44@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser34@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser50@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser51@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser52@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser53@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser54@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser55@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser56@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser57@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser58@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser59@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser60@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser61@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser62@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser63@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser64@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser65@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser66@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser67@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser68@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser69@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser70@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser71@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser72@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser73@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser74@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser75@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser76@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser77@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser78@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser79@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser80@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser81@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser82@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser83@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser84@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser85@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser86@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser87@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser88@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser89@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser90@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser91@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser92@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser93@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser94@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser95@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser96@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser97@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser98@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser99@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser100@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser101@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser102@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser103@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser104@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser105@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser106@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser107@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser108@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser109@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser110@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser111@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser112@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser113@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser114@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser115@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser116@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser117@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser118@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser119@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser120@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser121@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser122@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser123@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser124@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser125@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser126@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser127@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser128@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser129@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser130@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser131@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser132@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser133@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser134@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser135@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser136@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser137@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser138@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser139@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser140@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser141@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser142@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser143@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser144@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser145@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser146@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser147@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser148@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser149@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser150@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser151@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser152@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser153@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser154@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser155@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser156@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser157@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser158@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser159@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser160@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser161@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser162@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser163@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser164@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser165@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser166@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser167@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser168@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser169@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser170@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser171@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser172@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser173@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser174@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser175@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser176@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser177@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser178@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser179@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser180@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser181@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser182@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser183@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser184@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser185@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser186@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser187@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser188@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser189@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser190@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser191@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser192@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser193@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser194@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser195@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser196@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser197@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser198@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser199@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser200@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser201@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser202@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser203@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser204@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser205@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser206@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser207@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser208@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser209@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser210@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser211@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser212@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser213@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser214@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser215@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser216@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser217@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser218@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser219@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser220@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser221@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser222@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser223@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser224@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser225@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser226@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser227@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser228@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser229@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser230@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser231@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser232@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser233@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser234@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser235@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser236@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser237@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser238@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser239@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser240@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser241@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser242@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser243@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser244@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser245@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser246@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser247@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser248@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser249@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser250@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser251@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser252@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser253@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser254@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser255@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser256@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser257@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser258@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser259@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser260@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser261@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser262@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser263@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser264@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser265@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser266@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser267@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser268@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser269@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser270@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser271@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser272@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser273@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser274@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser275@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser276@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser277@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser278@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser279@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser280@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser281@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser282@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser283@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser284@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser285@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser286@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser287@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser288@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser289@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser290@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser291@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser292@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser293@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser294@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser295@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser296@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser297@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser298@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser299@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser300@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser301@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser302@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser303@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser304@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser305@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser306@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser307@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser308@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser309@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser310@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser311@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser312@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser313@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser314@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser315@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser316@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser317@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser318@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser319@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser320@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser321@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser322@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser323@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser324@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser325@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser326@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser327@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser328@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser329@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser330@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser331@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser332@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser333@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser334@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser335@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser336@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser337@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser338@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser339@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser340@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser341@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser342@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser343@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser344@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser345@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser346@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser347@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser348@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Request received: { identifier: 'loaduser349@example.com' }
+
+      at log (src/controllers/authController.js:270:11)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+
+  console.log
+    [LOGIN] Applying 1000ms delay (attempt 1)
+
+      at log (src/controllers/authController.js:415:13)
+

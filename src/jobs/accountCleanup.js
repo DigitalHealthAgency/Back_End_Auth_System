@@ -17,7 +17,7 @@ const startAccountCleanupJob = () => {
     for (const user of usersToDelete) {
       // TODO: Delete other linked data (e.g., clients, quotes)
       await User.findByIdAndDelete(user._id);
-      console.log(`✅ [Account Cleanup] Deleted user: ${user.email}`);
+      console.log(` [Account Cleanup] Deleted user: ${user.email}`);
     }
 
     // Log the cleanup activity

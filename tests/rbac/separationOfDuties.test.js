@@ -1,11 +1,26 @@
-// ✅ DHA SEPARATION OF DUTIES TESTS
+//  DHA SEPARATION OF DUTIES TESTS
 // Tests for conflict of interest and workflow separation
 
 const request = require('supertest');
+const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const app = require('../../src/app');
 const User = require('../../src/models/User');
 const Application = require('../../src/models/Application');
+const ConflictOfInterest = require('../../src/models/ConflictOfInterest');
+const Test = require('../../src/models/Test');
+const Review = require('../../src/models/Review');
 const { connectDB, disconnectDB, clearDatabase } = require('../helpers/db');
+
+// Helper function to generate JWT tokens for testing
+const generateToken = (userId, twoFactorConfirmed = true) => {
+  return jwt.sign(
+    { id: userId, twoFactorConfirmed },
+    process.env.JWT_SECRET || 'test_jwt_secret',
+    { expiresIn: '24h', issuer: 'Prezio', audience: 'prezio-users' }
+  );
+};
 
 describe('Separation of Duties', () => {
   let vendorUser, certificationOfficer, committeeUser, testingLabUser, adminUser;
@@ -23,16 +38,22 @@ describe('Separation of Duties', () => {
   beforeEach(async () => {
     await clearDatabase();
 
+    // Create a shared organization ID for testing
+    const sharedOrgId = new mongoose.Types.ObjectId();
+
     // Create users with different roles
     vendorUser = await User.create({
       type: 'organization',
       organizationName: 'Test Vendor',
       organizationEmail: 'vendor@test.com',
       organizationPhone: '+254712345678',
+      organizationType: 'EMR_PROVIDER',
+      county: 'Nairobi',
+      subCounty: 'Westlands',
       yearOfEstablishment: 2020,
       password: await bcrypt.hash('VendorPass123!', 12),
       role: 'vendor_developer',
-      organizationId: new mongoose.Types.ObjectId()
+      organizationId: sharedOrgId
     });
 
     certificationOfficer = await User.create({
@@ -81,15 +102,15 @@ describe('Separation of Duties', () => {
     });
 
     // Get auth tokens
-    vendorToken = generateToken(vendorUser._id, false);
-    officerToken = generateToken(certificationOfficer._id, false);
-    committeeToken = generateToken(committeeUser._id, false);
-    labToken = generateToken(testingLabUser._id, false);
-    adminToken = generateToken(adminUser._id, false);
+    vendorToken = generateToken(vendorUser._id);
+    officerToken = generateToken(certificationOfficer._id);
+    committeeToken = generateToken(committeeUser._id);
+    labToken = generateToken(testingLabUser._id);
+    adminToken = generateToken(adminUser._id);
 
     // Create test application
     testApplication = await Application.create({
-      organizationId: vendorUser.organizationId,
+      organizationId: sharedOrgId, // Use shared organization ID
       createdBy: vendorUser._id,
       title: 'Test Health System',
       status: 'submitted',
@@ -117,16 +138,19 @@ describe('Separation of Duties', () => {
       // Create another vendor from same organization
       const vendorColleague = await User.create({
         type: 'organization',
-        organizationName: 'Test Vendor',
+        organizationName: 'Test Vendor Colleague',
         organizationEmail: 'vendor2@test.com',
         organizationPhone: '+254712345683',
+        organizationType: 'EMR_PROVIDER',
+        county: 'Nairobi',
+        subCounty: 'Westlands',
         yearOfEstablishment: 2020,
         password: await bcrypt.hash('VendorPass123!', 12),
         role: 'vendor_developer',
         organizationId: vendorUser.organizationId // Same organization
       });
 
-      const colleagueToken = generateToken(vendorColleague._id, false);
+      const colleagueToken = generateToken(vendorColleague._id);
 
       const res = await request(app)
         .post(`/api/applications/${testApplication._id}/approve`)
@@ -337,7 +361,8 @@ describe('Separation of Duties', () => {
         applicationId: testApplication._id,
         reviewerId: certificationOfficer._id,
         status: 'completed',
-        recommendation: 'approve'
+        recommendation: 'approve',
+        comments: 'Review completed, approved'
       });
 
       const res = await request(app)
@@ -368,14 +393,16 @@ describe('Separation of Duties', () => {
         applicationId: testApplication._id,
         reviewerId: certificationOfficer._id,
         status: 'completed',
-        recommendation: 'approve'
+        recommendation: 'approve',
+        comments: 'First review completed, approved'
       });
 
       await Review.create({
         applicationId: testApplication._id,
         reviewerId: officer2._id,
         status: 'completed',
-        recommendation: 'approve'
+        recommendation: 'approve',
+        comments: 'Second review completed, approved'
       });
 
       const res = await request(app)

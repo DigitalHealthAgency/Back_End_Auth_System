@@ -4,7 +4,7 @@ const invoiceLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   message: {
-    error: '❌ Too many requests from this IP, please try again after 15 minutes',
+    error: ' Too many requests from this IP, please try again after 15 minutes',
     retryAfter: '15 minutes'
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
@@ -23,7 +23,7 @@ const sensitiveOpLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 50, // Limit each IP to 50 requests per hour
   message: {
-    error: '❌ Too many sensitive operations from this IP, please try again after an hour',
+    error: ' Too many sensitive operations from this IP, please try again after an hour',
     retryAfter: '60 minutes'
   },
   standardHeaders: true,
@@ -34,7 +34,7 @@ const sensitiveOpLimiter = rateLimit({
 // Industry-level: 5 requests per hour per IP for forgot password
 const forgotPasswordLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour window
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: process.env.NODE_ENV === 'test' ? 1000 : 5, // Higher limit in test mode
   message: {
     message: 'Too many password reset requests from this IP, please try again after an hour.',
     code: 'RATE_LIMIT_EXCEEDED'

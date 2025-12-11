@@ -1,14 +1,18 @@
-// ✅ CRITICAL SECURITY FIX TEST: Account Lockout (30-minute temporary)
-// Tests for temporary account lockout after 5 failed attempts
+//  DHA ACCOUNT LOCKOUT TESTS
+// SRS Requirement: FR-AUTH-003 (Account lockout after 5 failed login attempts)
 
 const request = require('supertest');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const app = require('../../src/app');
 const User = require('../../src/models/User');
+const SecurityEvent = require('../../src/models/securityEvent');
 const { connectDB, disconnectDB, clearDatabase } = require('../helpers/db');
 
-describe('Account Lockout Security Tests', () => {
+describe('Account Lockout Security', () => {
   let testUser;
+  const testPassword = 'Test123!@#$';
+  const wrongPassword = 'WrongPass123!@#$';
 
   beforeAll(async () => {
     await connectDB();
@@ -22,7 +26,6 @@ describe('Account Lockout Security Tests', () => {
     await clearDatabase();
 
     // Create test user
-    const hashedPassword = await bcrypt.hash('ValidPassword123!', 12);
     testUser = await User.create({
       type: 'individual',
       username: 'testuser',
@@ -30,423 +33,306 @@ describe('Account Lockout Security Tests', () => {
       lastName: 'User',
       email: 'test@example.com',
       phone: '+254712345678',
-      password: hashedPassword,
-      twoFactorEnabled: false,
-      failedAttempts: 0,
+      password: await bcrypt.hash(testPassword, 12),
+      role: 'public_user',
       accountStatus: 'active',
-      lockedUntil: null
+      failedAttempts: 0
     });
   });
 
-  describe('Lockout Threshold', () => {
-    it('should not lock account after 4 failed attempts', async () => {
-      // Fail 4 times
-      for (let i = 0; i < 4; i++) {
-        await request(app)
-          .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: 'WrongPassword123!'
-          });
-      }
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('active');
-      expect(user.lockedUntil).toBeNull();
-      expect(user.failedAttempts).toBe(4);
-    }, 30000);
-
-    it('should lock account after 5 failed attempts', async () => {
-      // Fail 5 times
-      for (let i = 0; i < 5; i++) {
-        await request(app)
-          .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: 'WrongPassword123!'
-          });
-      }
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('locked');
-      expect(user.lockedUntil).toBeDefined();
-      expect(user.lockedUntil).toBeInstanceOf(Date);
-      expect(user.failedAttempts).toBe(5);
-
-      // Should be locked for approximately 30 minutes
-      const lockDuration = user.lockedUntil - new Date();
-      expect(lockDuration).toBeGreaterThan(29 * 60 * 1000); // At least 29 minutes
-      expect(lockDuration).toBeLessThanOrEqual(30 * 60 * 1000); // At most 30 minutes
-    }, 60000);
-
-    it('should return ACCOUNT_LOCKED error on 5th failed attempt', async () => {
-      // Fail 4 times
-      for (let i = 0; i < 4; i++) {
-        await request(app)
-          .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: 'WrongPassword123!'
-          });
-      }
-
-      // 5th attempt should lock account
+  describe('Failed Login Attempt Tracking', () => {
+    it('should increment failedAttempts on wrong password', async () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'WrongPassword123!'
+          login: 'test@example.com',
+          password: wrongPassword
         });
 
-      expect(res.status).toBe(423);
-      expect(res.body.code).toBe('ACCOUNT_LOCKED');
-      expect(res.body.lockedUntil).toBeDefined();
-      expect(res.body.minutesRemaining).toBe(30);
-    }, 60000);
-  });
-
-  describe('Locked Account Behavior', () => {
-    beforeEach(async () => {
-      // Lock the account
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
-      testUser.failedAttempts = 5;
-      await testUser.save();
-    });
-
-    it('should reject login attempts on locked account', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      expect(res.status).toBe(423);
-      expect(res.body.code).toBe('ACCOUNT_LOCKED');
-      expect(res.body.message).toContain('temporarily locked');
-    });
-
-    it('should return remaining lock time in response', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      expect(res.status).toBe(423);
-      expect(res.body.lockedUntil).toBeDefined();
-      expect(res.body.minutesRemaining).toBeLessThanOrEqual(30);
-      expect(res.body.minutesRemaining).toBeGreaterThan(0);
-    });
-
-    it('should reject login even with correct password', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      expect(res.status).toBe(423);
-      expect(res.body.code).toBe('ACCOUNT_LOCKED');
-    });
-
-    it('should log security event for locked account login attempt', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      // Security event should be logged (verify in logs or database)
-      // This would require checking the SecurityEvent collection
-    });
-  });
-
-  describe('Temporary Lockout (30 minutes)', () => {
-    it('should automatically unlock after 30 minutes', async () => {
-      // Lock account with expiry in the past
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 1000); // 1 second ago
-      testUser.failedAttempts = 5;
-      await testUser.save();
-
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      // Should be automatically unlocked and login should succeed
-      expect(res.status).toBe(200);
-      expect(res.body.token).toBeDefined();
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('active');
-      expect(user.lockedUntil).toBeNull();
-      expect(user.failedAttempts).toBe(0);
-    });
-
-    it('should remain locked if lockout period not expired', async () => {
-      // Lock account with expiry in future
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
-      testUser.failedAttempts = 5;
-      await testUser.save();
-
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      expect(res.status).toBe(423);
-      expect(res.body.code).toBe('ACCOUNT_LOCKED');
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('locked');
-    });
-  });
-
-  describe('Failed Attempts Counter', () => {
-    it('should increment failed attempts on wrong password', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'WrongPassword123!'
-        });
+      expect(res.status).toBe(401);
+      expect(res.body.code).toBe('INVALID_CREDENTIALS');
+      expect(res.body.failedAttempts).toBe(1);
+      expect(res.body.remainingAttempts).toBe(4);
 
       const user = await User.findById(testUser._id);
       expect(user.failedAttempts).toBe(1);
     });
 
-    it('should track remaining attempts in response', async () => {
-      testUser.failedAttempts = 3;
+    it('should track multiple failed attempts correctly', async () => {
+      // First attempt
+      let res = await request(app)
+        .post('/api/auth/login')
+        .send({ login: 'test@example.com', password: wrongPassword });
+      expect(res.body.failedAttempts).toBe(1);
+
+      // Second attempt
+      res = await request(app)
+        .post('/api/auth/login')
+        .send({ login: 'test@example.com', password: wrongPassword });
+      expect(res.body.failedAttempts).toBe(2);
+
+      // Third attempt
+      res = await request(app)
+        .post('/api/auth/login')
+        .send({ login: 'test@example.com', password: wrongPassword });
+      expect(res.body.failedAttempts).toBe(3);
+
+      const user = await User.findById(testUser._id);
+      expect(user.failedAttempts).toBe(3);
+    });
+
+    it('should reset failedAttempts on successful login', async () => {
+      // Simulate 2 failed attempts
+      testUser.failedAttempts = 2;
       await testUser.save();
 
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'WrongPassword123!'
+          login: 'test@example.com',
+          password: testPassword
         });
 
-      expect(res.status).toBe(401);
-      expect(res.body.failedAttempts).toBe(4);
-      expect(res.body.remainingAttempts).toBe(1);
-    }, 10000);
-
-    it('should reset failed attempts on successful login', async () => {
-      testUser.failedAttempts = 3;
-      await testUser.save();
-
-      await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
+      expect(res.status).toBe(200);
 
       const user = await User.findById(testUser._id);
       expect(user.failedAttempts).toBe(0);
-    }, 10000);
+      expect(user.lockedUntil).toBeUndefined();
+    });
+  });
 
-    it('should not reset failed attempts on lockout', async () => {
-      // Fail 5 times to lock account
-      for (let i = 0; i < 5; i++) {
+  describe('Account Lockout After 5 Failed Attempts', () => {
+    it('should lock account after exactly 5 failed attempts', async () => {
+      // Make 4 failed attempts
+      for (let i = 0; i < 4; i++) {
         await request(app)
           .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: 'WrongPassword123!'
-          });
+          .send({ login: 'test@example.com', password: wrongPassword });
       }
+
+      // 5th attempt should lock the account
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ login: 'test@example.com', password: wrongPassword });
+
+      expect(res.status).toBe(423);
+      expect(res.body.code).toBe('ACCOUNT_SUSPENDED');
+      expect(res.body.message).toContain('suspended');
+      expect(res.body.remainingMinutes).toBe(30);
 
       const user = await User.findById(testUser._id);
       expect(user.failedAttempts).toBe(5);
-      expect(user.accountStatus).toBe('locked');
-    }, 60000);
-  });
+      expect(user.accountStatus).toBe('suspended');
+      expect(user.lockedUntil).toBeDefined();
+    });
 
-  describe('Lockout Notification Email', () => {
-    it('should send email notification when account is locked', async () => {
-      // This would require mocking the email service
-      // For now, we verify the lockout happens
+    it('should set lockedUntil to 30 minutes in future', async () => {
+      const beforeTime = new Date(Date.now() + 29 * 60 * 1000);
+
+      // Make 5 failed attempts
       for (let i = 0; i < 5; i++) {
         await request(app)
           .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: 'WrongPassword123!'
-          });
+          .send({ login: 'test@example.com', password: wrongPassword });
       }
 
       const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('locked');
-      // Email should be sent (verify with email service mock)
-    }, 60000);
-  });
+      expect(user.lockedUntil).toBeDefined();
 
-  describe('Permanent vs Temporary Suspension', () => {
-    it('should distinguish between locked and suspended status', async () => {
-      // Locked account (temporary)
-      testUser.accountStatus = 'locked';
+      const afterTime = new Date(Date.now() + 31 * 60 * 1000);
+      expect(new Date(user.lockedUntil).getTime()).toBeGreaterThan(beforeTime.getTime());
+      expect(new Date(user.lockedUntil).getTime()).toBeLessThan(afterTime.getTime());
+    });
+
+    it('should prevent login on locked account even with correct password', async () => {
+      // Lock the account
+      testUser.accountStatus = 'suspended';
+      testUser.suspended = true;
       testUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
       await testUser.save();
 
-      let res = await request(app)
+      const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
+          login: 'test@example.com',
+          password: testPassword
         });
 
       expect(res.status).toBe(423);
-      expect(res.body.code).toBe('ACCOUNT_LOCKED');
+      expect(res.body.code).toBe('ACCOUNT_SUSPENDED');
+      expect(res.body.message).toContain('locked');
+    });
 
-      // Suspended account (permanent)
+    it('should log security event when account is locked', async () => {
+      // Make 5 failed attempts to lock account
+      for (let i = 0; i < 5; i++) {
+        await request(app)
+          .post('/api/auth/login')
+          .send({ login: 'test@example.com', password: wrongPassword });
+      }
+
+      const events = await SecurityEvent.find({
+        user: testUser._id,
+        action: 'Account Suspended Due to Failed Logins'
+      });
+
+      expect(events.length).toBeGreaterThan(0);
+      expect(events[0].severity).toBe('high');
+      expect(events[0].details.failedAttempts).toBe(5);
+    });
+  });
+
+  describe('Lockout Status Checks', () => {
+    it('should return remainingMinutes when attempting to login to locked account', async () => {
+      // Lock account with 20 minutes remaining
       testUser.accountStatus = 'suspended';
-      testUser.suspended = true;
-      testUser.lockedUntil = null;
+      testUser.lockedUntil = new Date(Date.now() + 20 * 60 * 1000);
       await testUser.save();
 
-      res = await request(app)
+      const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      expect(res.status).toBe(423);
+      expect(res.body.remainingMinutes).toBeGreaterThan(18);
+      expect(res.body.remainingMinutes).toBeLessThanOrEqual(20);
+    });
+
+    it('should differentiate between suspended and locked status', async () => {
+      // Suspended account (not locked)
+      testUser.accountStatus = 'suspended';
+      testUser.suspended = true;
+      testUser.lockedUntil = undefined;
+      await testUser.save();
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
         });
 
       expect(res.status).toBe(423);
       expect(res.body.code).toBe('ACCOUNT_SUSPENDED');
       expect(res.body.message).toContain('suspended');
     });
+  });
 
-    it('should not auto-unlock suspended accounts', async () => {
-      testUser.accountStatus = 'suspended';
-      testUser.suspended = true;
-      testUser.lockedUntil = new Date(Date.now() - 1000); // Past date
-      await testUser.save();
-
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      expect(res.status).toBe(423);
-      expect(res.body.code).toBe('ACCOUNT_SUSPENDED');
+  describe('Account Lockout with Different Identifiers', () => {
+    it('should lock account when logging in with username', async () => {
+      // Make 5 failed attempts using username
+      for (let i = 0; i < 5; i++) {
+        await request(app)
+          .post('/api/auth/login')
+          .send({ login: 'testuser', password: wrongPassword });
+      }
 
       const user = await User.findById(testUser._id);
       expect(user.accountStatus).toBe('suspended');
+      expect(user.failedAttempts).toBe(5);
+    });
+
+    it('should lock account when logging in with email', async () => {
+      // Make 5 failed attempts using email
+      for (let i = 0; i < 5; i++) {
+        await request(app)
+          .post('/api/auth/login')
+          .send({ login: 'test@example.com', password: wrongPassword });
+      }
+
+      const user = await User.findById(testUser._id);
+      expect(user.accountStatus).toBe('suspended');
+      expect(user.failedAttempts).toBe(5);
+    });
+
+    it('should track failed attempts consistently across different login identifiers', async () => {
+      // Mix username and email attempts
+      await request(app)
+        .post('/api/auth/login')
+        .send({ login: 'testuser', password: wrongPassword });
+
+      await request(app)
+        .post('/api/auth/login')
+        .send({ login: 'test@example.com', password: wrongPassword });
+
+      await request(app)
+        .post('/api/auth/login')
+        .send({ login: 'testuser', password: wrongPassword });
+
+      const user = await User.findById(testUser._id);
+      expect(user.failedAttempts).toBe(3);
+    });
+  });
+
+  describe('Organization Account Lockout', () => {
+    let orgUser;
+
+    beforeEach(async () => {
+      orgUser = await User.create({
+        type: 'organization',
+        organizationName: 'Test Org',
+        organizationType: 'HOSPITAL',
+        county: 'Nairobi',
+        subCounty: 'Westlands',
+        organizationEmail: 'org@example.com',
+        organizationPhone: '+254712345679',
+        yearOfEstablishment: 2020,
+        password: await bcrypt.hash(testPassword, 12),
+        role: 'vendor_developer',
+        accountStatus: 'active',
+        failedAttempts: 0
+      });
+    });
+
+    it('should lock organization account after 5 failed attempts', async () => {
+      // Make 5 failed attempts
+      for (let i = 0; i < 5; i++) {
+        await request(app)
+          .post('/api/auth/login')
+          .send({ login: 'org@example.com', password: wrongPassword });
+      }
+
+      const user = await User.findById(orgUser._id);
+      expect(user.accountStatus).toBe('suspended');
+      expect(user.failedAttempts).toBe(5);
+      expect(user.lockedUntil).toBeDefined();
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle null lockedUntil with locked status', async () => {
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = null; // Invalid state
-      await testUser.save();
-
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      // Should either unlock or reject gracefully
-      expect([200, 423]).toContain(res.status);
-    });
-
-    it('should handle extremely high failed attempts', async () => {
-      testUser.failedAttempts = 1000;
-      await testUser.save();
-
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'WrongPassword123!'
-        });
-
-      expect(res.status).toBe(401);
-      // Should still track failed attempts
-    }, 35000);
-
-    it('should handle concurrent login attempts during lockout', async () => {
-      // Lock account
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
-      await testUser.save();
-
-      // Attempt multiple concurrent logins
-      const promises = Array(5).fill().map(() =>
+    it('should handle concurrent login attempts correctly', async () => {
+      // Simulate 3 concurrent wrong attempts
+      const promises = Array(3).fill(null).map(() =>
         request(app)
           .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: 'ValidPassword123!'
-          })
+          .send({ login: 'test@example.com', password: wrongPassword })
       );
 
-      const results = await Promise.all(promises);
+      await Promise.all(promises);
 
-      // All should be rejected with locked status
-      results.forEach(res => {
-        expect(res.status).toBe(423);
-        expect(res.body.code).toBe('ACCOUNT_LOCKED');
-      });
-    });
-  });
-
-  describe('Security Event Logging', () => {
-    it('should log failed login attempts', async () => {
-      await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'WrongPassword123!'
-        });
-
-      // Security event should be logged
-      // Verify SecurityEvent collection has the entry
+      const user = await User.findById(testUser._id);
+      // Should track at least 3 attempts (might be more due to race conditions)
+      expect(user.failedAttempts).toBeGreaterThanOrEqual(3);
     });
 
-    it('should log account lockout event', async () => {
-      for (let i = 0; i < 5; i++) {
-        await request(app)
-          .post('/api/auth/login')
-          .send({
-            identifier: 'test@example.com',
-            password: 'WrongPassword123!'
-          });
-      }
-
-      // Security event for lockout should be logged
-      // Verify high severity event in SecurityEvent collection
-    }, 60000);
-
-    it('should log login attempt on locked account', async () => {
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
+    it('should not decrement failedAttempts below 0', async () => {
+      testUser.failedAttempts = 0;
       await testUser.save();
 
-      await request(app)
+      const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
+          login: 'test@example.com',
+          password: testPassword
         });
 
-      // Security event should be logged
+      expect(res.status).toBe(200);
+
+      const user = await User.findById(testUser._id);
+      expect(user.failedAttempts).toBe(0);
     });
   });
 });

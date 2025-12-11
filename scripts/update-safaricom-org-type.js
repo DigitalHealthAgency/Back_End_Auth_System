@@ -49,7 +49,7 @@ async function updateSafaricomOrgType() {
     user.organizationType = 'NPO'; // Default to NPO, user can change it later
     await user.save();
 
-    console.log('✓ Successfully updated organizationType to: NPO');
+    console.log(' Successfully updated organizationType to: NPO');
     console.log('\nUser can now start organization registration!');
 
   } catch (error) {

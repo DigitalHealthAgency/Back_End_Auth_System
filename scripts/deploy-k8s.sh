@@ -72,7 +72,7 @@ if ! command -v kubectl &> /dev/null; then
     echo -e "${RED}Error: kubectl is not installed${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ kubectl is installed${NC}"
+echo -e "${GREEN} kubectl is installed${NC}"
 echo ""
 
 # Check cluster connection
@@ -81,7 +81,7 @@ if ! kubectl cluster-info &> /dev/null; then
     echo -e "${RED}Error: Cannot connect to Kubernetes cluster${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Connected to cluster${NC}"
+echo -e "${GREEN} Connected to cluster${NC}"
 echo ""
 
 # Display current context
@@ -166,7 +166,7 @@ case $ACTION in
         kubectl apply -f "${K8S_DIR}/ingress.yaml"
         echo ""
         
-        echo -e "${GREEN}✓ Deployment completed${NC}"
+        echo -e "${GREEN} Deployment completed${NC}"
         echo ""
         
         # Wait for rollout
@@ -200,7 +200,7 @@ case $ACTION in
         kubectl delete -f "${K8S_DIR}/secrets.yaml" --ignore-not-found=true
         
         echo ""
-        echo -e "${GREEN}✓ Resources deleted${NC}"
+        echo -e "${GREEN} Resources deleted${NC}"
         
         ;;
         

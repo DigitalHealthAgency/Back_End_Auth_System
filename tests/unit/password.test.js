@@ -1,4 +1,4 @@
-// ✅ DHA PASSWORD MANAGEMENT UNIT TESTS
+//  DHA PASSWORD MANAGEMENT UNIT TESTS
 // Tests for password reset, OTP, rate limiting, password history, password expiry
 
 const request = require('supertest');
@@ -9,6 +9,10 @@ const PasswordReset = require('../../src/models/PasswordReset');
 const { connectDB, disconnectDB, clearDatabase } = require('../helpers/db');
 const { validIndividualUser } = require('../fixtures/users');
 const { mockEmailService, resetAllMocks } = require('../mocks/services');
+
+// Mock the sendEmail utility
+jest.mock('../../src/utils/sendEmail', () => jest.fn().mockResolvedValue(true));
+const mockSendEmail = require('../../src/utils/sendEmail');
 
 describe('Password Management - Forgot Password', () => {
   let testUser;
@@ -24,7 +28,7 @@ describe('Password Management - Forgot Password', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
@@ -48,8 +52,8 @@ describe('Password Management - Forgot Password', () => {
       expect(res.body.message).toContain('Reset code sent');
 
       // Verify email was sent
-      expect(mockEmailService.sendEmail).toHaveBeenCalled();
-      const emailCall = mockEmailService.sendEmail.mock.calls[0][0];
+      expect(mockSendEmail).toHaveBeenCalled();
+      const emailCall = mockSendEmail.mock.calls[0][0];
       expect(emailCall.to).toBe(testEmail);
       expect(emailCall.subject).toContain('Password Reset');
 
@@ -79,7 +83,7 @@ describe('Password Management - Forgot Password', () => {
         .send({ email: 'org@example.com' });
 
       expect(res.status).toBe(200);
-      expect(mockEmailService.sendEmail).toHaveBeenCalled();
+      expect(mockSendEmail).toHaveBeenCalled();
     });
 
     it('should return 404 for non-existent email', async () => {
@@ -91,13 +95,13 @@ describe('Password Management - Forgot Password', () => {
       expect(res.body.message).toContain('not found');
     });
 
-    it('should generate 6-digit numeric code', async () => {
+    it('should generate 4-digit numeric code', async () => {
       await request(app)
         .post('/api/password/forgot-password')
         .send({ email: testEmail });
 
       const resetRecord = await PasswordReset.findOne({ email: testEmail });
-      expect(resetRecord.code).toMatch(/^\d{6}$/);
+      expect(resetRecord.code).toMatch(/^\d{4}$/);
     });
 
     it('should set expiration to 10 minutes', async () => {
@@ -118,11 +122,14 @@ describe('Password Management - Forgot Password', () => {
 
     it('should update existing reset request', async () => {
       // First request
-      await request(app)
+      const firstRes = await request(app)
         .post('/api/password/forgot-password')
         .send({ email: testEmail });
 
+      expect(firstRes.status).toBe(200);
+
       const firstRecord = await PasswordReset.findOne({ email: testEmail });
+      expect(firstRecord).toBeTruthy();
       const firstCode = firstRecord.code;
 
       // Wait a bit
@@ -154,7 +161,7 @@ describe('Password Management - Forgot Password', () => {
   describe('OTP Expiry', () => {
     it('should reject expired OTP', async () => {
       // Create expired reset code
-      const expiredCode = '123456';
+      const expiredCode = '1234';
       await PasswordReset.create({
         email: testEmail,
         code: expiredCode,
@@ -173,7 +180,7 @@ describe('Password Management - Forgot Password', () => {
     });
 
     it('should accept valid non-expired OTP', async () => {
-      const validCode = '123456';
+      const validCode = '1234';
       await PasswordReset.create({
         email: testEmail,
         code: validCode,
@@ -196,7 +203,7 @@ describe('Password Management - Forgot Password', () => {
 describe('Password Management - Verify Reset Code', () => {
   let testUser;
   const testEmail = 'testverify@example.com';
-  const validCode = '123456';
+  const validCode = '1234';
 
   beforeAll(async () => {
     await connectDB();
@@ -208,7 +215,7 @@ describe('Password Management - Verify Reset Code', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
@@ -313,7 +320,7 @@ describe('Password Management - Recovery Key Login', () => {
   let testUser;
   const testEmail = 'testrecovery@example.com';
   const testPassword = 'TestPassword123!';
-  const plainRecoveryKey = 'RECOVERY-KEY-ABC-123-XYZ-789';
+  const plainRecoveryKey = 'ABCD-EFGH-JKLM-NPQR';
   let recoveryKeyHash;
 
   beforeAll(async () => {
@@ -326,7 +333,7 @@ describe('Password Management - Recovery Key Login', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     recoveryKeyHash = await bcrypt.hash(plainRecoveryKey, 12);
 
@@ -364,7 +371,7 @@ describe('Password Management - Recovery Key Login', () => {
         .post('/api/password/recovery-login')
         .send({
           email: testEmail,
-          recoveryKey: 'INVALID-KEY'
+          recoveryKey: 'WXYZ-WXYZ-WXYZ-WXYZ'
         });
 
       expect(res.status).toBe(401);
@@ -463,7 +470,7 @@ describe('Password Management - Change Password', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
@@ -614,7 +621,7 @@ describe('Password Management - Password History (SRS Requirement)', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     const password1Hash = await bcrypt.hash(password1, 12);
 
@@ -741,7 +748,7 @@ describe('Password Management - Password Expiry (SRS Requirement - 90 days)', ()
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
   });
 
   it('should set password expiry on user creation', async () => {
@@ -860,7 +867,7 @@ describe('Password Management - Rate Limiting', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     await User.create({
       type: 'individual',

@@ -52,7 +52,8 @@ exports.verify2FACode = async (req, res) => {
       const verified = speakeasy.totp.verify({
         secret: user.twoFactorSecret,
         encoding: 'base32',
-        token
+        token,
+        window: 2
       });
 
       if (!verified) {
@@ -90,7 +91,8 @@ exports.verify2FACode = async (req, res) => {
       const verified = speakeasy.totp.verify({
         secret: user.twoFactorTempSecret,
         encoding: 'base32',
-        token
+        token,
+        window: 2
       });
 
       if (!verified) {
@@ -121,7 +123,24 @@ exports.verify2FACode = async (req, res) => {
 
       // Generate new token with twoFactorConfirmed flag so user can continue without re-login
       const { generateToken } = require('../utils/generateToken');
-      const currentSessionId = req.user.sessionId; // Get current session ID from the existing token
+      const crypto = require('crypto');
+
+      // Get the sessionId from the decoded token OR create new one if not available
+      const currentSessionId = req.decoded?.sessionId || crypto.randomUUID();
+
+      // If we created a new sessionId, add it to user's sessions
+      if (!req.decoded?.sessionId) {
+        user.sessions = user.sessions || [];
+        user.sessions.unshift({
+          sessionId: currentSessionId,
+          ip: req.ip,
+          device: req.headers['user-agent'] || 'Unknown',
+          createdAt: new Date()
+        });
+        if (user.sessions.length > 5) user.sessions = user.sessions.slice(0, 5);
+        await user.save();
+      }
+
       const newToken = generateToken(user._id, false, {
         sessionId: currentSessionId,
         tokenVersion: user.tokenVersion || 0,
@@ -156,7 +175,7 @@ exports.disable2FA = async (req, res) => {
   const { password, twoFactorCode } = req.body;
 
   try {
-    const user = await User.findById(req.user._id).select('+twoFactorSecret');
+    const user = await User.findById(req.user._id).select('+twoFactorSecret +password');
 
     if (!user.twoFactorEnabled) {
       return res.status(400).json({ message: '2FA is not enabled' });
@@ -172,12 +191,11 @@ exports.disable2FA = async (req, res) => {
       if (!twoFactorCode) {
         return res.status(401).json({ message: '2FA code required', requiresTwoFactor: true });
       }
-      // Debug log for troubleshooting
-      console.log('[2FA DEBUG] Disabling 2FA: secret =', user.twoFactorSecret, 'code =', twoFactorCode);
       const verified = speakeasy.totp.verify({
         secret: user.twoFactorSecret,
         encoding: 'base32',
-        token: twoFactorCode
+        token: twoFactorCode,
+        window: 2
       });
       if (!verified) {
         return res.status(401).json({ message: 'Invalid 2FA code' });

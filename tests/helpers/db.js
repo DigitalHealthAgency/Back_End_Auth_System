@@ -1,4 +1,4 @@
-// ✅ DATABASE HELPERS FOR TESTS
+//  DATABASE HELPERS FOR TESTS
 
 const mongoose = require('mongoose');
 

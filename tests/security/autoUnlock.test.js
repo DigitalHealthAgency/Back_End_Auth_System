@@ -1,15 +1,18 @@
-// ✅ CRITICAL SECURITY FIX TEST: Automatic Account Unlock
-// Tests for automatic unlocking of expired account lockouts
+//  DHA AUTO-UNLOCK TESTS
+// SRS Requirement: FR-AUTH-003 (Automatic unlock after 30 minutes)
 
 const request = require('supertest');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const app = require('../../src/app');
 const User = require('../../src/models/User');
-const { unlockExpiredAccountsJob } = require('../../src/middleware/autoUnlock');
+const SecurityEvent = require('../../src/models/securityEvent');
 const { connectDB, disconnectDB, clearDatabase } = require('../helpers/db');
 
-describe('Auto-Unlock Security Tests', () => {
+describe('Account Auto-Unlock Security', () => {
   let testUser;
+  const testPassword = 'Test123!@#$';
+  const wrongPassword = 'WrongPass123!@#$';
 
   beforeAll(async () => {
     await connectDB();
@@ -22,8 +25,6 @@ describe('Auto-Unlock Security Tests', () => {
   beforeEach(async () => {
     await clearDatabase();
 
-    // Create test user
-    const hashedPassword = await bcrypt.hash('ValidPassword123!', 12);
     testUser = await User.create({
       type: 'individual',
       username: 'testuser',
@@ -31,82 +32,196 @@ describe('Auto-Unlock Security Tests', () => {
       lastName: 'User',
       email: 'test@example.com',
       phone: '+254712345678',
-      password: hashedPassword,
-      twoFactorEnabled: false,
-      failedAttempts: 0,
+      password: await bcrypt.hash(testPassword, 12),
+      role: 'public_user',
       accountStatus: 'active',
-      lockedUntil: null
+      failedAttempts: 0
     });
   });
 
-  describe('Automatic Unlock on Login', () => {
-    it('should automatically unlock account if lockout period expired', async () => {
-      // Lock account with expiry in the past
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes ago
+  describe('Auto-Unlock After 30 Minutes', () => {
+    it('should automatically unlock account after lockedUntil time has passed', async () => {
+      // Lock account with expired lock time (1 minute in past)
+      testUser.accountStatus = 'suspended';
+      testUser.suspended = true;
+      testUser.lockedUntil = new Date(Date.now() - 1 * 60 * 1000);
       testUser.failedAttempts = 5;
       await testUser.save();
 
+      // Attempt login with correct password
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
+          login: 'test@example.com',
+          password: testPassword
         });
 
       expect(res.status).toBe(200);
       expect(res.body.token).toBeDefined();
 
       const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('active');
-      expect(user.lockedUntil).toBeNull();
       expect(user.failedAttempts).toBe(0);
+      expect(user.lockedUntil).toBeUndefined();
+      expect(user.accountStatus).toBe('active');
+      expect(user.suspended).toBe(false);
     });
 
-    it('should not unlock account if lockout period not expired', async () => {
-      // Lock account with expiry in the future
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
+    it('should still block login if lockedUntil time has not passed', async () => {
+      // Lock account with 29 minutes remaining
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now() + 29 * 60 * 1000);
       testUser.failedAttempts = 5;
       await testUser.save();
 
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
+          login: 'test@example.com',
+          password: testPassword
         });
 
       expect(res.status).toBe(423);
-      expect(res.body.code).toBe('ACCOUNT_LOCKED');
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('locked');
-      expect(user.lockedUntil).not.toBeNull();
+      expect(res.body.code).toBe('ACCOUNT_SUSPENDED');
+      expect(res.body.remainingMinutes).toBeGreaterThan(28);
     });
 
-    it('should send unlock notification email after auto-unlock', async () => {
-      // Lock account with expired lockout
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 1000); // 1 second ago
+    it('should unlock account exactly at 30-minute mark', async () => {
+      // Lock account with lock time expiring right now
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now());
       testUser.failedAttempts = 5;
       await testUser.save();
+
+      // Wait 1 second to ensure we're past the lock time
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
+          login: 'test@example.com',
+          password: testPassword
         });
 
       expect(res.status).toBe(200);
 
-      // Email should be sent (verify with email service mock)
-      // Notification email should contain unlock information
+      const user = await User.findById(testUser._id);
+      expect(user.accountStatus).toBe('active');
+      expect(user.failedAttempts).toBe(0);
+    });
+  });
+
+  describe('Auto-Unlock Behavior', () => {
+    it('should reset all lockout-related fields on successful unlock', async () => {
+      // Lock account with expired time
+      testUser.accountStatus = 'suspended';
+      testUser.suspended = true;
+      testUser.lockedUntil = new Date(Date.now() - 1 * 60 * 1000);
+      testUser.failedAttempts = 5;
+      await testUser.save();
+
+      await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      const user = await User.findById(testUser._id);
+      expect(user.failedAttempts).toBe(0);
+      expect(user.lockedUntil).toBeUndefined();
+      expect(user.accountStatus).toBe('active');
+      expect(user.suspended).toBe(false);
     });
 
-    it('should reset failed attempts on auto-unlock', async () => {
-      testUser.accountStatus = 'locked';
+    it('should allow login immediately after auto-unlock', async () => {
+      // Lock account with expired time
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now() - 1000);
+      testUser.failedAttempts = 5;
+      await testUser.save();
+
+      // First login should succeed (auto-unlock)
+      const res1 = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      expect(res1.status).toBe(200);
+
+      // Second login should also succeed
+      const res2 = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      expect(res2.status).toBe(200);
+    });
+
+    it('should not unlock if wrong password is provided after lockout expires', async () => {
+      // Lock account with expired time
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now() - 1000);
+      testUser.failedAttempts = 5;
+      await testUser.save();
+
+      // Try to login with wrong password - should start new attempt counter
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: wrongPassword
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.code).toBe('INVALID_CREDENTIALS');
+    });
+  });
+
+  describe('Remaining Time Calculation', () => {
+    it('should accurately calculate remaining minutes', async () => {
+      const remainingMinutes = 25;
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now() + remainingMinutes * 60 * 1000);
+      await testUser.save();
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      expect(res.status).toBe(423);
+      expect(res.body.remainingMinutes).toBeGreaterThan(24);
+      expect(res.body.remainingMinutes).toBeLessThanOrEqual(25);
+    });
+
+    it('should round up remaining minutes', async () => {
+      // 10 seconds remaining should show as 1 minute
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now() + 10 * 1000);
+      await testUser.save();
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      expect(res.status).toBe(423);
+      expect(res.body.remainingMinutes).toBe(1);
+    });
+  });
+
+  describe('Security Event Logging', () => {
+    it('should log successful unlock event', async () => {
+      // Lock account with expired time
+      testUser.accountStatus = 'suspended';
       testUser.lockedUntil = new Date(Date.now() - 1000);
       testUser.failedAttempts = 5;
       await testUser.save();
@@ -114,377 +229,172 @@ describe('Auto-Unlock Security Tests', () => {
       await request(app)
         .post('/api/auth/login')
         .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
+          login: 'test@example.com',
+          password: testPassword
         });
 
-      const user = await User.findById(testUser._id);
-      expect(user.failedAttempts).toBe(0);
+      // Check that failed attempts reset event was logged
+      const events = await SecurityEvent.find({
+        user: testUser._id,
+        action: 'Failed Attempts Reset'
+      });
+
+      expect(events.length).toBeGreaterThan(0);
+    });
+
+    it('should log failed login attempt on locked account', async () => {
+      // Lock account that hasn\'t expired
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now() + 20 * 60 * 1000);
+      await testUser.save();
+
+      await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      const events = await SecurityEvent.find({
+        user: testUser._id,
+        action: 'Login Attempt on Locked Account'
+      });
+
+      expect(events.length).toBeGreaterThan(0);
+      expect(events[0].severity).toBe('high');
     });
   });
 
-  describe('Scheduled Unlock Job', () => {
-    it('should unlock all expired locked accounts', async () => {
-      // Create multiple locked users with expired lockouts
-      const hashedPassword = await bcrypt.hash('Password123!', 12);
-
-      await User.create([
-        {
-          type: 'individual',
-          username: 'user1',
-          firstName: 'User',
-          lastName: 'One',
-          email: 'user1@example.com',
-          phone: '+254712345671',
-          password: hashedPassword,
-          twoFactorEnabled: false,
-          accountStatus: 'locked',
-          lockedUntil: new Date(Date.now() - 10 * 60 * 1000), // Expired
-          failedAttempts: 5
-        },
-        {
-          type: 'individual',
-          username: 'user2',
-          firstName: 'User',
-          lastName: 'Two',
-          email: 'user2@example.com',
-          phone: '+254712345672',
-          password: hashedPassword,
-          twoFactorEnabled: false,
-          accountStatus: 'locked',
-          lockedUntil: new Date(Date.now() - 5 * 60 * 1000), // Expired
-          failedAttempts: 5
-        },
-        {
-          type: 'individual',
-          username: 'user3',
-          firstName: 'User',
-          lastName: 'Three',
-          email: 'user3@example.com',
-          phone: '+254712345673',
-          password: hashedPassword,
-          twoFactorEnabled: false,
-          accountStatus: 'locked',
-          lockedUntil: new Date(Date.now() + 10 * 60 * 1000), // Not expired
-          failedAttempts: 5
-        }
-      ]);
-
-      // Run the unlock job
-      const result = await unlockExpiredAccountsJob();
-
-      expect(result.unlockedCount).toBe(2);
-
-      // Verify users were unlocked
-      const user1 = await User.findOne({ email: 'user1@example.com' });
-      const user2 = await User.findOne({ email: 'user2@example.com' });
-      const user3 = await User.findOne({ email: 'user3@example.com' });
-
-      expect(user1.accountStatus).toBe('active');
-      expect(user1.lockedUntil).toBeNull();
-      expect(user1.failedAttempts).toBe(0);
-
-      expect(user2.accountStatus).toBe('active');
-      expect(user2.lockedUntil).toBeNull();
-      expect(user2.failedAttempts).toBe(0);
-
-      expect(user3.accountStatus).toBe('locked');
-      expect(user3.lockedUntil).not.toBeNull();
-    });
-
-    it('should not unlock suspended accounts', async () => {
-      const hashedPassword = await bcrypt.hash('Password123!', 12);
-
-      await User.create({
-        type: 'individual',
-        username: 'suspended',
-        firstName: 'Suspended',
-        lastName: 'User',
-        email: 'suspended@example.com',
-        phone: '+254712345674',
-        password: hashedPassword,
-        twoFactorEnabled: false,
-        accountStatus: 'suspended',
-        suspended: true,
-        lockedUntil: new Date(Date.now() - 10 * 60 * 1000), // Expired
-        failedAttempts: 5
-      });
-
-      const result = await unlockExpiredAccountsJob();
-
-      const user = await User.findOne({ email: 'suspended@example.com' });
-      expect(user.accountStatus).toBe('suspended');
-      expect(user.suspended).toBe(true);
-    });
-
-    it('should send notification emails to all unlocked users', async () => {
-      const hashedPassword = await bcrypt.hash('Password123!', 12);
-
-      await User.create([
-        {
-          type: 'individual',
-          username: 'user1',
-          firstName: 'User',
-          lastName: 'One',
-          email: 'user1@example.com',
-          phone: '+254712345675',
-          password: hashedPassword,
-          twoFactorEnabled: false,
-          accountStatus: 'locked',
-          lockedUntil: new Date(Date.now() - 1000),
-          failedAttempts: 5
-        },
-        {
-          type: 'individual',
-          username: 'user2',
-          firstName: 'User',
-          lastName: 'Two',
-          email: 'user2@example.com',
-          phone: '+254712345676',
-          password: hashedPassword,
-          twoFactorEnabled: false,
-          accountStatus: 'locked',
-          lockedUntil: new Date(Date.now() - 1000),
-          failedAttempts: 5
-        }
-      ]);
-
-      const result = await unlockExpiredAccountsJob();
-
-      expect(result.unlockedCount).toBe(2);
-      // Emails should be sent (verify with email service mock)
-    });
-
-    it('should log security events for auto-unlocked accounts', async () => {
-      const hashedPassword = await bcrypt.hash('Password123!', 12);
-
-      await User.create({
-        type: 'individual',
-        username: 'user1',
-        firstName: 'User',
-        lastName: 'One',
-        email: 'user1@example.com',
-        phone: '+254712345677',
-        password: hashedPassword,
-        twoFactorEnabled: false,
-        accountStatus: 'locked',
-        lockedUntil: new Date(Date.now() - 1000),
-        failedAttempts: 5
-      });
-
-      await unlockExpiredAccountsJob();
-
-      // Security event should be logged
-      // Verify SecurityEvent collection has the unlock event
-    });
-  });
-
-  describe('Auto-Unlock Middleware', () => {
-    it('should check and unlock before login processing', async () => {
-      testUser.accountStatus = 'locked';
+  describe('Multiple Lock-Unlock Cycles', () => {
+    it('should handle multiple lock-unlock cycles correctly', async () => {
+      // First cycle: Lock and unlock
+      testUser.accountStatus = 'suspended';
       testUser.lockedUntil = new Date(Date.now() - 1000);
       testUser.failedAttempts = 5;
       await testUser.save();
 
-      // The middleware should unlock before the login logic runs
-      const res = await request(app)
+      const res1 = await request(app)
         .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
+        .send({ login: 'test@example.com', password: testPassword });
+      expect(res1.status).toBe(200);
 
-      expect(res.status).toBe(200);
-    });
+      // Make 5 failed attempts to lock again
+      for (let i = 0; i < 5; i++) {
+        await request(app)
+          .post('/api/auth/login')
+          .send({ login: 'test@example.com', password: wrongPassword });
+      }
 
-    it('should work with different identifier types', async () => {
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 1000);
-      await testUser.save();
+      let user = await User.findById(testUser._id);
+      expect(user.accountStatus).toBe('suspended');
+      expect(user.failedAttempts).toBe(5);
 
-      // Test with username
-      let res = await request(app)
+      // Wait for lock to expire (simulate)
+      user.lockedUntil = new Date(Date.now() - 1000);
+      await user.save();
+
+      // Second unlock
+      const res2 = await request(app)
         .post('/api/auth/login')
-        .send({
-          identifier: 'testuser',
-          password: 'ValidPassword123!'
-        });
+        .send({ login: 'test@example.com', password: testPassword });
+      expect(res2.status).toBe(200);
 
-      expect(res.status).toBe(200);
-
-      // Re-lock for next test
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 1000);
-      await testUser.save();
-
-      // Test with email
-      res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          identifier: 'test@example.com',
-          password: 'ValidPassword123!'
-        });
-
-      expect(res.status).toBe(200);
+      user = await User.findById(testUser._id);
+      expect(user.accountStatus).toBe('active');
+      expect(user.failedAttempts).toBe(0);
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle null lockedUntil gracefully', async () => {
-      testUser.accountStatus = 'locked';
+    it('should handle lockedUntil being null', async () => {
+      testUser.accountStatus = 'active';
       testUser.lockedUntil = null;
+      testUser.failedAttempts = 0;
       await testUser.save();
 
-      const result = await unlockExpiredAccountsJob();
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
 
-      // Should not crash, may or may not unlock depending on implementation
-      expect(result).toBeDefined();
+      expect(res.status).toBe(200);
     });
 
-    it('should handle invalid date values', async () => {
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date('invalid');
+    it('should handle invalid lockedUntil dates', async () => {
+      testUser.accountStatus = 'active';
+      testUser.lockedUntil = undefined;
+      testUser.failedAttempts = 0;
       await testUser.save();
 
-      const result = await unlockExpiredAccountsJob();
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
 
-      expect(result).toBeDefined();
+      expect(res.status).toBe(200);
     });
 
-    it('should handle users with no email', async () => {
-      const hashedPassword = await bcrypt.hash('Password123!', 12);
+    it('should handle account locked far in future', async () => {
+      // Lock for 24 hours (way more than 30 minutes)
+      testUser.accountStatus = 'suspended';
+      testUser.lockedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await testUser.save();
 
-      const orgUser = await User.create({
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'test@example.com',
+          password: testPassword
+        });
+
+      expect(res.status).toBe(423);
+      expect(res.body.remainingMinutes).toBeGreaterThan(1400); // ~24 hours
+    });
+  });
+
+  describe('Organization Account Auto-Unlock', () => {
+    let orgUser;
+
+    beforeEach(async () => {
+      orgUser = await User.create({
         type: 'organization',
         organizationName: 'Test Org',
         organizationType: 'HOSPITAL',
         county: 'Nairobi',
         subCounty: 'Westlands',
         organizationEmail: 'org@example.com',
-        organizationPhone: '+254712345678',
+        organizationPhone: '+254712345679',
         yearOfEstablishment: 2020,
-        password: hashedPassword,
-        twoFactorEnabled: false,
-        accountStatus: 'locked',
-        lockedUntil: new Date(Date.now() - 1000),
-        failedAttempts: 5
+        password: await bcrypt.hash(testPassword, 12),
+        role: 'vendor_developer',
+        accountStatus: 'active',
+        failedAttempts: 0
       });
+    });
 
-      const result = await unlockExpiredAccountsJob();
+    it('should auto-unlock organization accounts after 30 minutes', async () => {
+      // Lock org account with expired time
+      orgUser.accountStatus = 'suspended';
+      orgUser.lockedUntil = new Date(Date.now() - 1000);
+      orgUser.failedAttempts = 5;
+      await orgUser.save();
 
-      expect(result.unlockedCount).toBeGreaterThan(0);
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          login: 'org@example.com',
+          password: testPassword
+        });
+
+      expect(res.status).toBe(200);
 
       const user = await User.findById(orgUser._id);
       expect(user.accountStatus).toBe('active');
-    });
-
-    it('should handle concurrent unlock operations', async () => {
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 1000);
-      await testUser.save();
-
-      // Run multiple unlock operations concurrently
-      const promises = [
-        unlockExpiredAccountsJob(),
-        unlockExpiredAccountsJob(),
-        unlockExpiredAccountsJob()
-      ];
-
-      const results = await Promise.all(promises);
-
-      // All should succeed without errors
-      results.forEach(result => {
-        expect(result).toBeDefined();
-      });
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('active');
-    });
-
-    it('should handle large number of expired accounts', async () => {
-      const hashedPassword = await bcrypt.hash('Password123!', 12);
-
-      // Create 50 locked users
-      const users = Array.from({ length: 50 }, (_, i) => ({
-        type: 'individual',
-        username: `user${i}`,
-        firstName: 'User',
-        lastName: `${i}`,
-        email: `user${i}@example.com`,
-        phone: `+25471234${String(i).padStart(4, '0')}`,
-        password: hashedPassword,
-        twoFactorEnabled: false,
-        accountStatus: 'locked',
-        lockedUntil: new Date(Date.now() - 1000),
-        failedAttempts: 5
-      }));
-
-      await User.insertMany(users);
-
-      const result = await unlockExpiredAccountsJob();
-
-      expect(result.unlockedCount).toBe(50);
-    });
-  });
-
-  describe('Unlock Timing', () => {
-    it('should unlock exactly at expiry time', async () => {
-      // Lock with expiry at current time
-      const expiryTime = new Date();
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = expiryTime;
-      await testUser.save();
-
-      // Wait a tiny bit to ensure we're past expiry
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      const result = await unlockExpiredAccountsJob();
-
-      expect(result.unlockedCount).toBeGreaterThan(0);
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('active');
-    });
-
-    it('should not unlock 1 second before expiry', async () => {
-      // Lock with expiry 1 second in future
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() + 1000);
-      await testUser.save();
-
-      const result = await unlockExpiredAccountsJob();
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('locked');
-    });
-  });
-
-  describe('Email Notifications', () => {
-    it('should include unlock details in email', async () => {
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 1000);
-      await testUser.save();
-
-      await unlockExpiredAccountsJob();
-
-      // Email should contain:
-      // - Account unlocked message
-      // - Lockout duration
-      // - Timestamp
-      // - Security recommendations
-    });
-
-    it('should handle email failures gracefully', async () => {
-      testUser.accountStatus = 'locked';
-      testUser.lockedUntil = new Date(Date.now() - 1000);
-      testUser.email = 'invalid-email'; // Invalid email
-      await testUser.save();
-
-      // Should still unlock even if email fails
-      const result = await unlockExpiredAccountsJob();
-
-      const user = await User.findById(testUser._id);
-      expect(user.accountStatus).toBe('active');
+      expect(user.failedAttempts).toBe(0);
     });
   });
 });

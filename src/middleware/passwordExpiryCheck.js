@@ -1,4 +1,4 @@
-// ✅ CRITICAL SECURITY FIX: Password Expiry Checking
+//  CRITICAL SECURITY FIX: Password Expiry Checking
 // SRS Requirements: FR-AUTH-003 (Password Management - 90 day expiry)
 
 const { isPasswordExpired, getDaysUntilExpiry } = require('../utils/passwordSecurity');

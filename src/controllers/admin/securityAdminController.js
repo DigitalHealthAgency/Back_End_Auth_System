@@ -1,6 +1,7 @@
 // src/controllers/admin/securityAdminController.js
 const User = require('../../models/User');
 const SecurityEvent = require('../../models/securityEvent');
+const ActivityLog = require('../../models/ActivityLog');
 // Note: Sessions are stored in User.sessions array, not a separate model
 
 /**
@@ -14,52 +15,54 @@ exports.getSecurityStats = async (req, res) => {
 
     // Failed logins in last 24 hours
     const failedLogins = await SecurityEvent.countDocuments({
-      action: 'login_failed',
-      timestamp: { $gte: twentyFourHoursAgo }
+      action: { $regex: /Failed Login|Authentication Failed/i },
+      createdAt: { $gte: twentyFourHoursAgo }
     });
 
-    // Active sessions count - aggregate from User.sessions arrays
-    const usersWithSessions = await User.aggregate([
-      { $unwind: '$sessions' },
-      { $count: 'total' }
-    ]);
-    const activeSessions = usersWithSessions.length > 0 ? usersWithSessions[0].total : 0;
+    // Active sessions count - count users with active sessions
+    const activeSessions = await User.countDocuments({
+      'sessions.0': { $exists: true }
+    });
 
-    // Blocked IPs count (from SecurityEvent with action: 'ip_blocked')
-    const blockedIPs = await SecurityEvent.distinct('metadata.ipAddress', {
-      action: 'ip_blocked',
-      'metadata.blocked': true
-    }).then(ips => ips.length);
+    // Blocked IPs count
+    const blockedIPsList = await SecurityEvent.distinct('ip', {
+      action: { $in: ['IP Blocked', 'IP Temporarily Blocked'] }
+    });
+    const blockedIPs = blockedIPsList.length;
 
-    // 2FA compliance
-    const totalUsers = await User.countDocuments({ accountStatus: 'active' });
+    // 2FA compliance - ALL users, not just active
+    const totalUsers = await User.countDocuments();
     const usersWithTwoFactor = await User.countDocuments({
-      accountStatus: 'active',
       twoFactorEnabled: true
     });
     const twoFactorCompliance = totalUsers > 0
-      ? ((usersWithTwoFactor / totalUsers) * 100).toFixed(1)
+      ? Math.round((usersWithTwoFactor / totalUsers) * 100)
       : 0;
 
-    // Account lockouts
+    // Account lockouts - users currently locked
     const accountLockouts = await User.countDocuments({
-      accountStatus: 'suspended',
-      'metadata.reason': 'security_lockout'
+      lockedUntil: { $exists: true, $ne: null, $gt: now }
     });
 
     // Suspicious activities
     const suspiciousActivities = await SecurityEvent.countDocuments({
-      action: { $in: ['suspicious_activity', 'brute_force_detected', 'multiple_failed_attempts'] },
-      timestamp: { $gte: twentyFourHoursAgo }
+      action: { $in: ['Suspicious Activity Detected', 'Multiple Failed Attempts', 'Account Locked', 'IP Blocked'] },
+      createdAt: { $gte: twentyFourHoursAgo }
     });
 
     res.status(200).json({
-      failedLogins24h: failedLogins,
-      activeSessions,
-      blockedIPs,
-      twoFactorCompliance: parseFloat(twoFactorCompliance),
-      accountLockouts,
-      suspiciousActivities
+      success: true,
+      data: {
+        failedLogins24h: failedLogins,
+        activeSessions,
+        blockedIPsCount: blockedIPs,
+        twoFactorCompliance,
+        usersWithTwoFactor,
+        totalUsers,
+        accountLockouts,
+        suspiciousActivities,
+        timestamp: now
+      }
     });
   } catch (error) {
     console.error('Error fetching security stats:', error);
@@ -78,31 +81,39 @@ exports.getFailedLogins = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search || '';
 
-    const query = { action: 'login_failed' };
+    const query = {
+      action: { $in: ['Failed Login', 'Authentication Failed', 'Multiple Failed Attempts'] }
+    };
 
     if (search) {
       query.$or = [
-        { 'metadata.email': { $regex: search, $options: 'i' } },
+        { targetEmail: { $regex: search, $options: 'i' } },
         { ip: { $regex: search, $options: 'i' } }
       ];
     }
 
     const failedLogins = await SecurityEvent.find(query)
-      .sort({ timestamp: -1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .select('timestamp ip device metadata.email metadata.reason metadata.location')
+      .populate('user', 'email firstName lastName organizationName type')
       .lean();
 
     const total = await SecurityEvent.countDocuments(query);
 
     const formattedData = failedLogins.map(log => ({
       id: log._id.toString(),
-      email: log.metadata?.email || 'Unknown',
+      email: log.user?.email || log.targetEmail || 'Unknown',
+      user: log.user
+        ? (log.user.type === 'individual'
+            ? `${log.user.firstName} ${log.user.lastName}`
+            : log.user.organizationName)
+        : log.targetEmail || 'Unknown',
       ipAddress: log.ip || 'Unknown',
-      timestamp: log.timestamp,
-      reason: log.metadata?.reason || 'Unknown',
-      location: log.metadata?.location
+      device: log.device || 'Unknown',
+      timestamp: log.createdAt,
+      action: log.action,
+      details: log.details
     }));
 
     res.status(200).json({
@@ -242,14 +253,14 @@ exports.getBlockedIPs = async (req, res) => {
       action: 'ip_blocked',
       'metadata.blocked': true
     })
-      .sort({ timestamp: -1 })
+      .sort({ createdAt: -1 })
       .lean();
 
     const formattedData = blockedEvents.map(event => ({
       id: event._id.toString(),
       ipAddress: event.metadata.ipAddress || event.ip,
       reason: event.metadata.reason || event.reason || 'Security violation',
-      blockedAt: event.timestamp,
+      blockedAt: event.createdAt,
       blockedBy: event.metadata.blockedBy || 'System Auto-Block',
       expiresAt: event.metadata.expiresAt,
       permanent: !event.metadata.expiresAt
@@ -320,7 +331,7 @@ exports.getWhitelistedIPs = async (req, res) => {
       action: 'ip_whitelisted',
       'metadata.whitelisted': true
     })
-      .sort({ timestamp: -1 })
+      .sort({ createdAt: -1 })
       .populate('adminId', 'email firstName lastName')
       .lean();
 
@@ -333,7 +344,7 @@ exports.getWhitelistedIPs = async (req, res) => {
         id: event._id.toString(),
         ipAddress: event.metadata.ipAddress,
         description: event.metadata.description || 'No description',
-        addedAt: event.timestamp,
+        addedAt: event.createdAt,
         addedBy: addedByName
       };
     });
@@ -392,7 +403,7 @@ exports.addWhitelistedIP = async (req, res) => {
         id: whitelistEvent._id.toString(),
         ipAddress,
         description: description || 'Trusted IP',
-        addedAt: whitelistEvent.timestamp,
+        addedAt: whitelistEvent.createdAt,
         addedBy: `${req.user.firstName} ${req.user.lastName}`
       }
     });
@@ -453,14 +464,14 @@ exports.exportSecurityLogs = async (req, res) => {
     const query = {};
 
     if (startDate || endDate) {
-      query.timestamp = {};
-      if (startDate) query.timestamp.$gte = new Date(startDate);
-      if (endDate) query.timestamp.$lte = new Date(endDate);
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
     }
 
     if (type) {
       const typeMap = {
-        'failed_logins': 'login_failed',
+        'failed_logins': 'Failed Login',
         'sessions': 'session_created',
         'blocked_ips': 'ip_blocked'
       };
@@ -468,7 +479,7 @@ exports.exportSecurityLogs = async (req, res) => {
     }
 
     const logs = await SecurityEvent.find(query)
-      .sort({ timestamp: -1 })
+      .sort({ createdAt: -1 })
       .populate('user', 'email firstName lastName')
       .populate('adminId', 'email')
       .lean();
@@ -482,7 +493,7 @@ exports.exportSecurityLogs = async (req, res) => {
       const userEmail = log.user?.email || log.metadata?.email || 'Unknown';
       const adminEmail = log.adminId?.email || '';
       csvRows.push([
-        log.timestamp.toISOString(),
+        log.createdAt.toISOString(),
         log.action,
         userEmail,
         log.ip || '',
@@ -502,3 +513,331 @@ exports.exportSecurityLogs = async (req, res) => {
     res.status(500).json({ message: 'Failed to export security logs' });
   }
 };
+
+/**
+ * Get suspicious activities with details
+ * Admin only - view all suspicious activity events
+ */
+exports.getSuspiciousActivities = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
+
+    const query = {
+      action: {
+        $in: [
+          'Suspicious Activity Detected',
+          'Multiple Failed Attempts',
+          'Account Locked',
+          'IP Blocked',
+          'Brute Force Detected',
+          'Unusual Login Pattern',
+          'Session Hijack Attempt'
+        ]
+      }
+    };
+
+    if (search) {
+      query.$or = [
+        { targetEmail: { $regex: search, $options: 'i' } },
+        { ip: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const activities = await SecurityEvent.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'email firstName lastName organizationName type')
+      .lean();
+
+    const total = await SecurityEvent.countDocuments(query);
+    const recent24h = await SecurityEvent.countDocuments({
+      ...query,
+      createdAt: { $gte: twentyFourHoursAgo }
+    });
+
+    const formattedData = activities.map(activity => ({
+      id: activity._id.toString(),
+      action: activity.action,
+      user: activity.user
+        ? (activity.user.type === 'individual'
+            ? `${activity.user.firstName} ${activity.user.lastName}`
+            : activity.user.organizationName)
+        : activity.targetEmail || 'Unknown',
+      email: activity.user?.email || activity.targetEmail || 'Unknown',
+      ipAddress: activity.ip || 'Unknown',
+      device: activity.device || 'Unknown',
+      timestamp: activity.createdAt,
+      severity: getSeverity(activity.action),
+      details: activity.details || {}
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedData,
+      stats: {
+        total,
+        recent24h
+      },
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching suspicious activities:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch suspicious activities'
+    });
+  }
+};
+
+/**
+ * Get detailed audit log entry
+ * Admin only - view single audit log with full details
+ */
+exports.getAuditLogDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const auditLog = await ActivityLog.findById(id)
+      .populate('user', 'email firstName lastName organizationName type role')
+      .lean();
+
+    if (!auditLog) {
+      return res.status(404).json({
+        success: false,
+        message: 'Audit log not found'
+      });
+    }
+
+    const formattedData = {
+      id: auditLog._id.toString(),
+      timestamp: auditLog.createdAt,
+      action: auditLog.action,
+      description: auditLog.description,
+      user: auditLog.user
+        ? {
+            id: auditLog.user._id,
+            name: auditLog.user.type === 'individual'
+              ? `${auditLog.user.firstName} ${auditLog.user.lastName}`
+              : auditLog.user.organizationName,
+            email: auditLog.user.email,
+            role: auditLog.user.role
+          }
+        : null,
+      ipAddress: auditLog.ip || 'Unknown',
+      userAgent: auditLog.userAgent,
+      details: auditLog.details || {},
+      severity: getSeverityFromAction(auditLog.action)
+    };
+
+    res.status(200).json({
+      success: true,
+      data: formattedData
+    });
+  } catch (error) {
+    console.error('Error fetching audit log details:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch audit log details'
+    });
+  }
+};
+
+/**
+ * Get audit logs with filtering and pagination
+ * Admin only - view comprehensive audit trail
+ */
+exports.getAuditLogs = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const action = req.query.action || '';
+    const severity = req.query.severity || '';
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+
+    // Build query
+    const query = {};
+
+    // Search across multiple fields
+    if (search) {
+      const users = await User.find({
+        $or: [
+          { email: { $regex: search, $options: 'i' } },
+          { firstName: { $regex: search, $options: 'i' } },
+          { lastName: { $regex: search, $options: 'i' } },
+          { organizationName: { $regex: search, $options: 'i' } }
+        ]
+      }).select('_id');
+
+      const userIds = users.map(u => u._id);
+
+      query.$or = [
+        { user: { $in: userIds } },
+        { action: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Filter by action type
+    if (action && action !== 'all') {
+      query.action = action;
+    }
+
+    // Filter by date range
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = end;
+      }
+    }
+
+    // Fetch audit logs
+    const auditLogs = await ActivityLog.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'email firstName lastName organizationName type')
+      .lean();
+
+    const total = await ActivityLog.countDocuments(query);
+
+    // Map severity based on action type
+    const getSeverity = (action) => {
+      const criticalActions = [
+        'ADMIN_DELETE_USER', 'ADMIN_SUSPEND_USER', 'ADMIN_TERMINATE_SESSIONS',
+        'SUBSCRIPTION_CANCELLED_BY_ADMIN', 'ACCOUNT_TERMINATION_REQUEST',
+        'Unauthorized Admin Access', 'Login Attempt on Suspended Account',
+        'BULK_SECURITY_ACTION'
+      ];
+      const highActions = [
+        'ADMIN_UPDATE_USER_ROLE', 'ADMIN_IMPERSONATE_USER', 'UPDATE_SYSTEM_SETTINGS',
+        'ADMIN_FORCE_LOGOUT', 'IP_LIST_ADD', 'IP_LIST_UPDATE', 'IP_LIST_REMOVE',
+        'PASSWORD_RESET_COMPLETED', 'ENABLE_2FA', 'DISABLE_2FA'
+      ];
+      const mediumActions = [
+        'ADMIN_VIEW_USER_DETAILS', 'ADMIN_VIEW_USERS', 'PASSWORD_RESET_REQUEST',
+        'UPDATE_PROFILE', 'PROFILE_UPDATE', 'Authentication Failed'
+      ];
+
+      if (criticalActions.includes(action)) return 'critical';
+      if (highActions.includes(action)) return 'high';
+      if (mediumActions.includes(action)) return 'medium';
+      return 'low';
+    };
+
+    // Format response
+    const formattedLogs = auditLogs.map(log => {
+      const userName = log.user
+        ? log.user.type === 'individual'
+          ? `${log.user.firstName} ${log.user.lastName}`
+          : log.user.organizationName
+        : 'System';
+
+      const userEmail = log.user?.email || 'system@dha.go.ke';
+
+      // Determine status based on action
+      let status = 'success';
+      if (log.action.includes('Failed') || log.action.includes('Unauthorized')) {
+        status = 'failure';
+      } else if (log.action.includes('Attempt') || log.action.includes('Request')) {
+        status = 'warning';
+      }
+
+      return {
+        id: log._id.toString(),
+        timestamp: log.createdAt,
+        user: userName,
+        userEmail: userEmail,
+        action: log.action,
+        resource: log.description || 'N/A',
+        status: status,
+        severity: getSeverity(log.action),
+        ipAddress: log.ip || 'Unknown',
+        details: log.details || {}
+      };
+    });
+
+    // Filter by severity if specified (after mapping)
+    let filteredLogs = formattedLogs;
+    if (severity && severity !== 'all') {
+      filteredLogs = formattedLogs.filter(log => log.severity === severity);
+    }
+
+    res.status(200).json({
+      data: filteredLogs,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ message: 'Failed to fetch audit logs' });
+  }
+};
+
+// Helper functions
+function getSeverity(action) {
+  const criticalActions = [
+    'IP Blocked',
+    'Account Locked',
+    'Brute Force Detected',
+    'Unauthorized Access Attempt'
+  ];
+  const highActions = [
+    'Multiple Failed Attempts',
+    'Suspicious Activity Detected',
+    'Session Hijack Attempt',
+    'Unusual Login Pattern'
+  ];
+  const mediumActions = [
+    'Failed Login',
+    'Authentication Failed'
+  ];
+
+  if (criticalActions.some(c => action.includes(c))) return 'critical';
+  if (highActions.some(h => action.includes(h))) return 'high';
+  if (mediumActions.some(m => action.includes(m))) return 'medium';
+  return 'low';
+}
+
+function getSeverityFromAction(action) {
+  const criticalActions = [
+    'ADMIN_DELETE_USER', 'ADMIN_SUSPEND_USER', 'ADMIN_TERMINATE_SESSIONS',
+    'SUBSCRIPTION_CANCELLED_BY_ADMIN', 'ACCOUNT_TERMINATION_REQUEST',
+    'Unauthorized Admin Access', 'Login Attempt on Suspended Account',
+    'BULK_SECURITY_ACTION'
+  ];
+  const highActions = [
+    'ADMIN_UPDATE_USER_ROLE', 'ADMIN_IMPERSONATE_USER', 'UPDATE_SYSTEM_SETTINGS',
+    'ADMIN_FORCE_LOGOUT', 'IP_LIST_ADD', 'IP_LIST_UPDATE', 'IP_LIST_REMOVE',
+    'PASSWORD_RESET_COMPLETED', 'ENABLE_2FA', 'DISABLE_2FA'
+  ];
+  const mediumActions = [
+    'ADMIN_VIEW_USER_DETAILS', 'ADMIN_VIEW_USERS', 'PASSWORD_RESET_REQUEST',
+    'UPDATE_PROFILE', 'PROFILE_UPDATE', 'Authentication Failed'
+  ];
+
+  if (criticalActions.includes(action)) return 'critical';
+  if (highActions.includes(action)) return 'high';
+  if (mediumActions.includes(action)) return 'medium';
+  return 'low';
+}

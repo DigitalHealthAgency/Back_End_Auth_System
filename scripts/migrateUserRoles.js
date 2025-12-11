@@ -35,15 +35,15 @@ const VALID_DHA_ROLES = [
 
 async function migrateUserRoles() {
   try {
-    console.log('🔄 Starting user role migration...\n');
+    console.log(' Starting user role migration...\n');
 
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Connected to MongoDB\n');
+    console.log(' Connected to MongoDB\n');
 
     // Find all users
     const allUsers = await User.find({}).select('_id email organizationEmail username role type');
-    console.log(`📊 Found ${allUsers.length} total users\n`);
+    console.log(` Found ${allUsers.length} total users\n`);
 
     let migratedCount = 0;
     let alreadyValidCount = 0;
@@ -55,7 +55,7 @@ async function migrateUserRoles() {
       // Check if role is valid
       if (VALID_DHA_ROLES.includes(user.role)) {
         alreadyValidCount++;
-        console.log(`✓ User ${identifier} already has valid role: ${user.role}`);
+        console.log(` User ${identifier} already has valid role: ${user.role}`);
         continue;
       }
 
@@ -71,15 +71,15 @@ async function migrateUserRoles() {
         );
 
         migratedCount++;
-        console.log(`✅ Migrated user ${identifier}: ${oldRole} → ${newRole}`);
+        console.log(` Migrated user ${identifier}: ${oldRole} → ${newRole}`);
       } catch (error) {
         errors.push({ user: identifier, error: error.message });
-        console.error(`❌ Failed to migrate user ${identifier}:`, error.message);
+        console.error(` Failed to migrate user ${identifier}:`, error.message);
       }
     }
 
     console.log('\n' + '='.repeat(60));
-    console.log('📊 MIGRATION SUMMARY');
+    console.log(' MIGRATION SUMMARY');
     console.log('='.repeat(60));
     console.log(`Total users processed:     ${allUsers.length}`);
     console.log(`Already valid:             ${alreadyValidCount}`);
@@ -88,7 +88,7 @@ async function migrateUserRoles() {
     console.log('='.repeat(60));
 
     if (errors.length > 0) {
-      console.log('\n❌ Errors encountered:');
+      console.log('\n Errors encountered:');
       errors.forEach((err, idx) => {
         console.log(`${idx + 1}. User: ${err.user}`);
         console.log(`   Error: ${err.error}\n`);
@@ -96,14 +96,14 @@ async function migrateUserRoles() {
     }
 
     if (migratedCount > 0) {
-      console.log('\n✅ Migration completed successfully!');
-      console.log('🔄 Please restart your application for changes to take effect.');
+      console.log('\n Migration completed successfully!');
+      console.log(' Please restart your application for changes to take effect.');
     } else {
-      console.log('\n✓ No migration needed - all users already have valid roles.');
+      console.log('\n No migration needed - all users already have valid roles.');
     }
 
   } catch (error) {
-    console.error('\n❌ Migration failed:', error);
+    console.error('\n Migration failed:', error);
     process.exit(1);
   } finally {
     await mongoose.disconnect();

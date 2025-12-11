@@ -1,4 +1,4 @@
-// ✅ CRITICAL SECURITY FIX: Automatic Account Unlock
+//  CRITICAL SECURITY FIX: Automatic Account Unlock
 // SRS Requirements: FR-SEC-003 (Account Lockout Management)
 // Automatically unlocks accounts after 30-minute lockout period
 
@@ -43,7 +43,7 @@ const autoUnlockMiddleware = async (req, res, next) => {
 
         // Unlock account
         user.accountStatus = 'active';
-        user.lockedUntil = null;
+        user.lockedUntil = undefined;
         user.failedAttempts = 0;
         await user.save();
 
@@ -86,7 +86,7 @@ const autoUnlockMiddleware = async (req, res, next) => {
           // Don't fail the request if email fails
         }
 
-        console.log(`✅ Account auto-unlocked: ${user.email || user.organizationEmail}`);
+        console.log(` Account auto-unlocked: ${user.email || user.organizationEmail}`);
       }
     }
 
@@ -123,9 +123,12 @@ const unlockExpiredAccountsJob = async () => {
 
     for (const user of lockedUsers) {
       try {
+        // Save original lockout time before clearing
+        const wasLockedUntil = user.lockedUntil;
+
         // Unlock account
         user.accountStatus = 'active';
-        user.lockedUntil = null;
+        user.lockedUntil = undefined;
         user.failedAttempts = 0;
         await user.save();
 
@@ -136,7 +139,7 @@ const unlockExpiredAccountsJob = async () => {
           ip: 'system',
           device: 'Scheduled Job',
           details: {
-            wasLockedUntil: user.lockedUntil,
+            wasLockedUntil,
             unlockedAt: now,
             reason: 'Automatic unlock by scheduled job'
           }

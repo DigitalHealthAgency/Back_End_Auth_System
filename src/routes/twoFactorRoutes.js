@@ -7,7 +7,8 @@ const validate = require('../middleware/validate');
 const { verify2FASchema, disable2FASchema } = require('../validators/twoFactorValidator');
 
 // Setup flow
-router.get('/generate', protect, generate2FASecret);
+router.post('/generate', protect, generate2FASecret);
+router.get('/generate', protect, generate2FASecret); // Support both GET and POST
 router.post('/verify', protect, validate(verify2FASchema), verify2FACode);
 
 // Disable 2FA

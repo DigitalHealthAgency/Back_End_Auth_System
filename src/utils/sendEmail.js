@@ -5,8 +5,8 @@ const EmailLog = require('../models/EmailLog');
 let resend = null;
 if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
-} else {
-  console.warn('⚠️ RESEND_API_KEY not found. Email functionality will be disabled.');
+} else if (process.env.NODE_ENV !== 'test') {
+  console.warn(' RESEND_API_KEY not found. Email functionality will be disabled.');
 }
 
 // Define a default sender if environment variable is missing
@@ -15,7 +15,10 @@ const DEFAULT_FROM = process.env.FROM_EMAIL || 'Kenya Digital Health Agency <nor
 const sendEmail = async ({ to, subject, text, html }) => {
   // Check if Resend client is available
   if (!resend) {
-    console.warn('⚠️ Email service not configured. Skipping email send.');
+    // Only warn in non-test environments
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn(' Email service not configured. Skipping email send.');
+    }
     return { success: false, message: 'Email service not configured' };
   }
 
@@ -45,7 +48,7 @@ const sendEmail = async ({ to, subject, text, html }) => {
     //console.log(`📩 Email sent successfully to ${to}`);
     return response;
   } catch (error) {
-    console.error(`❌ Email failed to send: ${error.message}`);
+    console.error(` Email failed to send: ${error.message}`);
     if (error.details) {
       console.error('Error details:', error.details);
     }

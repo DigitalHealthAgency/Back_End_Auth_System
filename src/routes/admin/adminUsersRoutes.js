@@ -6,7 +6,9 @@ const {
   createUser,
   getUserById,
   updateUserStatus,
-  deleteUser
+  updateUserRole,
+  deleteUser,
+  exportUsers
 } = require('../../controllers/admin/adminUsersController');
 const auth = require('../../middleware/authMiddleware');
 const { requireAdminRole } = require('../../middleware/rbac');
@@ -16,10 +18,12 @@ router.use(auth);
 router.use(requireAdminRole());
 
 // User management routes
+router.get('/export', exportUsers);  // Must be before /:id route
 router.get('/', getAllUsers);
 router.post('/', createUser);
 router.get('/:id', getUserById);
 router.patch('/:id/status', updateUserStatus);
+router.patch('/:id/role', updateUserRole);
 router.delete('/:id', deleteUser);
 
 module.exports = router;

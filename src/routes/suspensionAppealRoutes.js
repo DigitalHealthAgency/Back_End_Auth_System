@@ -1,4 +1,4 @@
-// ✅ DHA SUSPENSION APPEAL ROUTES
+//  DHA SUSPENSION APPEAL ROUTES
 // FR-USER-LIFECYCLE-002: Suspension appeal workflow routes
 
 const express = require('express');

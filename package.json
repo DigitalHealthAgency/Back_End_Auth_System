@@ -10,10 +10,10 @@
     "test:coverage": "jest --coverage",
     "test:internal": "node test-internal-endpoints.js",
     "test:unit": "jest tests/unit --maxWorkers=4",
-    "test:integration": "jest tests/integration --maxWorkers=2 --runInBand",
+    "test:integration": "jest tests/integration --runInBand",
     "test:security": "jest tests/security --maxWorkers=2",
     "test:rbac": "jest tests/rbac --maxWorkers=2",
-    "test:performance": "jest tests/performance --maxWorkers=1 --runInBand",
+    "test:performance": "jest tests/performance --runInBand",
     "test:all": "jest --coverage --maxWorkers=4",
     "test:ci": "jest --coverage --ci --maxWorkers=2 --forceExit",
     "coverage:report": "jest --coverage --coverageReporters=html && open coverage/index.html",
@@ -37,6 +37,7 @@
     "express": "^5.1.0",
     "express-async-handler": "^1.2.0",
     "express-fileupload": "^1.5.1",
+    "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "form-data": "^4.0.2",
@@ -54,7 +55,9 @@
     "pg": "^8.16.2",
     "qrcode": "^1.5.4",
     "resend": "^4.4.1",
-    "speakeasy": "^2.0.0"
+    "speakeasy": "^2.0.0",
+    "validator": "^13.15.23",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "eslint": "^9.39.1",

@@ -1,5 +1,5 @@
 /*
- * 🛡️ The Bouncer of Your API Club 🎯
+ *  The Bouncer of Your API Club 
  * 
  * This middleware is like that one friend who takes being a party bouncer WAY too seriously.
  * It checks IDs, maintains a naughty list, and remembers that one time you tried to sneak in

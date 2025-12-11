@@ -11,7 +11,10 @@ const {
   getWhitelistedIPs,
   addWhitelistedIP,
   removeWhitelistedIP,
-  exportSecurityLogs
+  exportSecurityLogs,
+  getAuditLogs,
+  getSuspiciousActivities,
+  getAuditLogDetails
 } = require('../../controllers/admin/securityAdminController');
 const auth = require('../../middleware/authMiddleware');
 const { requireAdminRole } = require('../../middleware/rbac');
@@ -41,5 +44,12 @@ router.delete('/whitelisted-ips/:id', removeWhitelistedIP);
 
 // Export logs
 router.get('/export', exportSecurityLogs);
+
+// Audit logs
+router.get('/audit-logs', getAuditLogs);
+router.get('/audit-logs/:id', getAuditLogDetails);
+
+// Suspicious activities
+router.get('/suspicious-activities', getSuspiciousActivities);
 
 module.exports = router;

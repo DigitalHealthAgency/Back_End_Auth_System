@@ -1,4 +1,4 @@
-// ✅ DHA TWO-FACTOR AUTHENTICATION TESTS
+//  DHA TWO-FACTOR AUTHENTICATION TESTS
 // Tests for 2FA setup, verification, QR generation, backup codes
 
 const request = require('supertest');
@@ -7,7 +7,11 @@ const speakeasy = require('speakeasy');
 const app = require('../../src/app');
 const User = require('../../src/models/User');
 const { connectDB, disconnectDB, clearDatabase } = require('../helpers/db');
-const { resetAllMocks } = require('../mocks/services');
+
+// Mock the sendEmail utility
+jest.mock('../../src/utils/sendEmail');
+const mockSendEmail = require('../../src/utils/sendEmail');
+mockSendEmail.mockResolvedValue(true);
 
 describe('Two-Factor Authentication - Setup', () => {
   let testUser;
@@ -24,7 +28,7 @@ describe('Two-Factor Authentication - Setup', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
@@ -170,11 +174,12 @@ describe('Two-Factor Authentication - Setup', () => {
     });
 
     it('should reject expired TOTP code', async () => {
-      // Generate token from 2 time windows ago (expired)
+      // Generate token from 3+ time windows ago (expired)
+      // window: 2 accepts +/- 2 windows (30s each), so 90+ seconds is outside the window
       const expiredToken = speakeasy.totp({
         secret: tempSecret,
         encoding: 'base32',
-        time: Math.floor(Date.now() / 1000) - 60 // 60 seconds ago
+        time: Math.floor(Date.now() / 1000) - 120 // 120 seconds ago (4 windows)
       });
 
       const res = await request(app)
@@ -240,7 +245,7 @@ describe('Two-Factor Authentication - Login with 2FA', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
@@ -419,7 +424,7 @@ describe('Two-Factor Authentication - Disable 2FA', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
@@ -631,7 +636,7 @@ describe('Two-Factor Authentication - QR Code Generation', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
@@ -759,7 +764,7 @@ describe('Two-Factor Authentication - TOTP Time Window', () => {
 
   beforeEach(async () => {
     await clearDatabase();
-    resetAllMocks();
+    mockSendEmail.mockClear();
 
     testUser = await User.create({
       type: 'individual',
