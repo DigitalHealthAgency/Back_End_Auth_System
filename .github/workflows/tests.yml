@@ -25,6 +25,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: Cache MongoDB binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}
+
       - name: Install dependencies
         run: npm ci
 
@@ -41,8 +47,10 @@ jobs:
 
       - name: Run tests with coverage
         run: npm run test:ci
+        timeout-minutes: 30
         env:
           CI: true
+          NODE_OPTIONS: '--max-old-space-size=4096'
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
